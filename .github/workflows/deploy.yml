@@ -1,9 +1,16 @@
 name: Deploy to GitHub Pages
 
+# Deliberately manual. Publishing to GitHub Pages puts the built app on a
+# public URL, which this repository being private does not change — so the
+# deploy is triggered by hand rather than by every push.
+#
+# To publish: Settings -> Pages -> Source -> GitHub Actions (once), then run
+# this workflow from the Actions tab. To go back to deploying automatically,
+# uncomment the push trigger below.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  # push:
+  #   branches: [claude/tigrigna-learning-app-tiw5q3]
 
 # Allow one concurrent deployment, and let a newer push supersede a running one.
 concurrency:

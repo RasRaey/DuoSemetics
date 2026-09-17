@@ -7,6 +7,7 @@
  *   npm run build && node scripts/smoke.mjs
  */
 
+import { globSync } from 'node:fs';
 import { mkdir, readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, resolve } from 'node:path';
@@ -16,8 +17,18 @@ const ROOT = resolve(import.meta.dirname, '..');
 const DIST = join(ROOT, 'dist');
 const SHOTS = join(ROOT, 'shots');
 const PORT = 4178;
-const CHROME =
-  process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+/**
+ * Which Chromium to drive.
+ *
+ * In CI, Playwright installs and finds its own, so nothing is passed. In a
+ * sandbox that pre-installs one at a fixed path, point at it rather than
+ * downloading a second copy. An empty CHROME_PATH counts as unset.
+ */
+function chromePath() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const preinstalled = globSync('/opt/pw-browsers/chromium-*/chrome-linux/chrome');
+  return preinstalled[0];
+}
 
 const MIME = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
@@ -56,7 +67,8 @@ const PHONE = {
 const server = await serve();
 await mkdir(SHOTS, { recursive: true });
 
-const browser = await chromium.launch({ executablePath: CHROME });
+const exe = chromePath();
+const browser = await chromium.launch(exe ? { executablePath: exe } : {});
 const ctx = await browser.newContext(PHONE);
 const page = await ctx.newPage();
 

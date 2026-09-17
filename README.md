@@ -16,12 +16,35 @@ Dynamic Island and home-indicator safe areas, standalone display, offline suppor
 
 ## Install it on your iPhone
 
-1. Deploy it (see below), or run `npm run dev -- --host` and open the LAN address.
-2. Open the URL in **Safari** (not Chrome — only Safari can install to the Home Screen).
-3. Share → **Add to Home Screen**.
+Whichever route you take, the last two steps are the same: open the URL in
+**Safari** (only Safari can install to the Home Screen), then Share →
+**Add to Home Screen**. It launches full-screen with its own icon and splash,
+keeps working without a connection, and stores progress on the device.
 
-It then launches full-screen with its own icon and splash, keeps working without a
-connection, and stores progress on the device.
+**Over your own Wi-Fi — nothing leaves your network:**
+
+```bash
+npm install
+npm run dev -- --host     # prints a http://192.168.x.x:5173 address
+```
+
+Open that address on the phone. The catch is that your computer has to be awake
+and on the same network; once the app is installed and its files are cached it
+will still open offline, but it is not a permanent home for it.
+
+**On GitHub Pages — a permanent URL, but a public one:**
+
+Publishing to Pages puts the built app on `https://<user>.github.io/DuoSemetics/`,
+which is public **even though this repository is private**. Nothing in the app is
+sensitive — there is no account and no data — but it is a deliberate choice, so the
+deploy workflow is set to manual rather than running on every push.
+
+To publish: Settings → Pages → Source → **GitHub Actions** (once), then run
+**Deploy to GitHub Pages** from the Actions tab. To make it automatic afterwards,
+uncomment the `push` trigger in `.github/workflows/deploy.yml`.
+
+For a private permanent URL instead, `npm run build` and serve `dist/` anywhere
+that supports password protection — it is a folder of static files.
 
 ## Running it
 
@@ -33,12 +56,13 @@ npm run preview      # serve the build
 npm run typecheck    # tsc, no emit
 npm run lint         # oxlint
 npm run icons        # regenerate icons + splash screens from scripts/icons.mjs
-node scripts/smoke.mjs   # end-to-end test at iPhone 15 Pro Max size (needs a build first)
+npm run check:content # generate every lesson and assert each one is solvable
+npm run test:e2e     # build, then play two full lessons in Chromium at phone size
 ```
 
-Deploying to GitHub Pages is automatic on a push to `main`
-(`.github/workflows/deploy.yml`). Enable Pages → Source → **GitHub Actions** once,
-in the repository settings. For any other host, `npm run build` and serve `dist/`.
+`.github/workflows/ci.yml` runs lint, typecheck, the content check and the browser
+smoke test on every push. `.github/workflows/deploy.yml` publishes to GitHub Pages
+and is manual — see above.
 
 ## What's in the course
 

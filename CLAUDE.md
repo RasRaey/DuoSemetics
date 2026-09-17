@@ -52,6 +52,13 @@ type, so when adding content, check the ids resolve.
 - `localStorage` access is wrapped in try/catch: private mode and cleared storage
   must degrade to a working session, never a crash.
 
+## Repository
+
+The default branch is `claude/tigrigna-learning-app-tiw5q3` — GitHub made the
+first pushed branch the default, and there is no `main`. The repository is
+private; the Pages deploy workflow is manual because publishing would put the
+built app on a public URL regardless.
+
 ## Testing
 
 `npm run build && node scripts/smoke.mjs` plays a real lesson end to end at phone
