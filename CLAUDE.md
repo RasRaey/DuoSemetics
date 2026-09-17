@@ -122,6 +122,15 @@ exercise's `solve()` and `fail()` on `window.__e2e`. Keep that hook query-gated.
 loaded page.** The store saves on its own schedule and will silently overwrite a
 write that lands after boot — this has produced two false test failures already.
 
+## The match round shares ids across sides
+
+In `MatchPairsEx`, a pair's Tigrinya tile and its English tile carry the **same
+id**. Anything that highlights by id alone lights up both, which hands the
+learner the answer — this shipped, and selecting a word visibly selected its
+translation. Selection and the wrong-pair flash therefore key on `side:id`;
+only *clearing* is per pair, since matched tiles do leave together. The stress
+test asserts one tap highlights exactly one tile.
+
 ## The hearts loop
 
 Practice must stay free and must keep handing a heart back on completion

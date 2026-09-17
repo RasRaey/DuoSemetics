@@ -195,6 +195,8 @@ export function MatchPairsEx({
 }) {
   const [cleared, setCleared] = useState<string[]>([]);
   const [picked, setPicked] = useState<{ side: 'ti' | 'en'; id: string } | null>(null);
+  // Keyed `side:id`, not bare ids. Both tiles of a pair share an id, so an
+  // id-only key would light up the partner tile and hand over the answer.
   const [bad, setBad] = useState<string[]>([]);
   const [misses, setMisses] = useState(0);
 
@@ -233,7 +235,7 @@ export function MatchPairsEx({
       sfxWrong();
       haptic([10, 40, 10]);
       setMisses((m) => m + 1);
-      setBad([picked.id, id]);
+      setBad([`${picked.side}:${picked.id}`, `${side}:${id}`]);
       window.setTimeout(() => {
         setBad([]);
         setPicked(null);
@@ -241,12 +243,21 @@ export function MatchPairsEx({
     }
   };
 
-  const cls = (id: string) =>
+  /**
+   * Highlighting is per *tile*, not per pair.
+   *
+   * The Tigrinya tile and its English tile share one id, so matching on the id
+   * alone would highlight a tile's partner the moment either was tapped —
+   * which is the answer. Both selection and the wrong-pair flash therefore key
+   * on side as well. Clearing is the one thing that is per pair, since both
+   * tiles do leave together once matched.
+   */
+  const cls = (side: 'ti' | 'en', id: string) =>
     [
       'card',
       cleared.includes(id) ? 'gone' : '',
-      bad.includes(id) ? 'bad' : '',
-      picked?.id === id && !bad.length ? 'sel' : '',
+      bad.includes(`${side}:${id}`) ? 'bad' : '',
+      picked?.id === id && picked.side === side && !bad.length ? 'sel' : '',
     ]
       .filter(Boolean)
       .join(' ');
@@ -255,12 +266,12 @@ export function MatchPairsEx({
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
       {left.map((p, i) => (
         <Fragment key={p.id}>
-          <button className={cls(p.id)} onClick={() => tap('ti', p.id)} style={{ padding: '14px 8px', minHeight: 62 }}>
+          <button className={cls('ti', p.id)} onClick={() => tap('ti', p.id)} style={{ padding: '14px 8px', minHeight: 62 }}>
             <div className="geez" style={{ fontSize: 21 }}>{p.ti}</div>
             {showTr && <div className="tr" style={{ fontSize: 11 }}>{p.tr}</div>}
           </button>
           <button
-            className={cls(right[i].id)}
+            className={cls('en', right[i].id)}
             onClick={() => tap('en', right[i].id)}
             style={{ padding: '14px 8px', minHeight: 62, fontSize: 16, fontWeight: 800 }}
           >

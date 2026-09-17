@@ -342,6 +342,58 @@ console.log('\n▸ out-of-hearts sheet offers practice');
   await page.context().close();
 }
 
+// ─── 9. The match round must not give the answer away ────────────────────
+console.log('\n▸ match round does not leak answers');
+{
+  const page = await phone();
+  await page.getByRole('button', { name: /^Hello/ }).first().click();
+  await page.waitForTimeout(350);
+  await page.getByRole('button', { name: /Start/ }).click();
+  await page.waitForTimeout(500);
+
+  // Skip ahead to the match round, which always closes a lesson.
+  let n = 0;
+  while (n++ < 40 && (await page.evaluate(() => window.__e2e?.type)) !== 'match_pairs') {
+    await page.evaluate(() => window.__e2e.solve());
+    await page.waitForTimeout(120);
+    const c = page.getByRole('button', { name: 'Check' });
+    if (!(await c.count())) break;
+    await c.click();
+    await page.waitForTimeout(200);
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.waitForTimeout(170);
+  }
+  const reached = (await page.evaluate(() => window.__e2e?.type)) === 'match_pairs';
+  check('reached the match round', reached);
+
+  if (reached) {
+    const pairs = await page.evaluate(() => window.__e2e.pairs);
+    const tiles = () => page.locator('.sheet-layer .card, .page .card');
+
+    // Tap one Tigrinya tile. Exactly one tile may look selected — its partner
+    // lighting up would be the answer handed over for free.
+    await page.getByText(pairs[0].ti, { exact: true }).first().click();
+    await page.waitForTimeout(250);
+    const selected = await page.locator('.card.sel').count();
+    check('tapping one tile selects exactly one', selected === 1, `${selected} highlighted`);
+    const partnerLit = await page
+      .locator('.card.sel')
+      .filter({ hasText: pairs[0].en })
+      .count();
+    check('its English partner is not highlighted', partnerLit === 0);
+    await page.screenshot({ path: join(SHOTS, 's9-match-select.png') });
+
+    // Now tap a *wrong* partner. The red flash must not mark all four tiles.
+    await page.getByText(pairs[1].en, { exact: true }).first().click();
+    await page.waitForTimeout(200);
+    const flashed = await page.locator('.card.bad').count();
+    check('a wrong pair flashes exactly two tiles', flashed === 2, `${flashed} flashed`);
+    await page.screenshot({ path: join(SHOTS, 's9-match-wrong.png') });
+    void tiles;
+  }
+  await page.context().close();
+}
+
 await browser.close();
 server.close();
 
