@@ -371,9 +371,12 @@ function NodeSheet({
 
         {unlocked && node.teach?.length ? (
           <div className="col" style={{ gap: 5 }}>
-            <div className="tiny upper muted">New words</div>
+            <div className="tiny upper muted">
+              {node.teach.length} new {node.teach.length === 1 ? 'word' : 'words'}
+            </div>
             <div className="geez" style={{ fontSize: 19, lineHeight: 1.7 }}>
-              {node.teach.length} · {node.teach.slice(0, 6).map((id) => wordTi(id)).join('  ·  ')}
+              {node.teach.slice(0, 6).map((id) => wordTi(id)).join('  ·  ')}
+              {node.teach.length > 6 ? ' …' : ''}
             </div>
           </div>
         ) : null}

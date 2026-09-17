@@ -87,6 +87,24 @@ resetting itself. `engine/storage.ts` measures this and the Profile tab reports
 it; a first-run sheet warns anyone still in a tab. Do not remove that warning —
 it is the most likely explanation for any "my streak vanished" report.
 
+## Sheets are portalled, deliberately
+
+`Sheet` in `components/ui.tsx` renders into `document.body` inside a fixed
+`.sheet-layer`. Do not "simplify" it back to rendering in place:
+
+- Most sheets are declared inside the scrolling `.page`, and iOS WebKit makes a
+  scroll container its own stacking context. That traps the sheet's z-index, so
+  the tab bar paints over the sheet's buttons. This shipped, and made the Start
+  button on the lesson sheet untappable on a real iPhone.
+- Portalling into `.app` is *not* a fix: every screen renders its own `.app`, so
+  a sheet mounting during a screen change captures the outgoing node and renders
+  into a detached element. Silently invisible — it broke the out-of-hearts sheet.
+
+`document.body` always exists and never moves. Chromium happened to paint the
+old arrangement correctly, so neither bug showed up in the tests until the
+layout was measured against real safe-area insets. When changing sheet layout,
+emulate them: `:root{--sat:59px;--sab:34px}` via `addInitScript`.
+
 ## Testing
 
 `npm run build && node scripts/smoke.mjs` plays a real lesson end to end at phone

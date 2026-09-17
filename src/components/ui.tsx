@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { sfxTap } from '../audio/sfx';
 import { haptic } from '../audio/speech';
 import { IconFlame, IconGem, IconHeart, IconMute, IconSpeaker } from './icons';
@@ -69,7 +70,24 @@ export function Bar({
   );
 }
 
-/** Bottom sheet with a scrim. Tapping the scrim closes it unless `sticky`. */
+/**
+ * Bottom sheet with a scrim.
+ *
+ * Portalled into `document.body` inside a fixed overlay layer, rather than
+ * rendered where it was written. Two reasons, both learned the hard way:
+ *
+ *  - Most sheets are declared inside the scrolling `.page`, and iOS WebKit
+ *    makes a scroll container its own stacking context. That traps the sheet's
+ *    z-index inside it, so the tab bar paints straight over the sheet's
+ *    buttons — which is exactly what happened on a real iPhone.
+ *  - Portalling into `.app` instead is not enough: each screen renders its own
+ *    `.app`, so a sheet mounting during a screen change captures the outgoing
+ *    node and then renders into a detached element, invisibly.
+ *
+ * `document.body` always exists and never moves. The layer matches the app's
+ * width so the sheet lines up on a wide screen, and passes pointer events
+ * through everywhere except the scrim and the sheet itself.
+ */
 export function Sheet({
   open,
   onClose,
@@ -90,15 +108,17 @@ export function Sheet({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose, sticky]);
 
-  if (!open) return null;
-  return (
-    <>
+  if (!open || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="sheet-layer">
       <div className="scrim" onClick={sticky ? undefined : onClose} />
       <div className="sheet" role="dialog" aria-modal="true">
         {!sticky && <div className="sheet-grip" />}
         {children}
       </div>
-    </>
+    </div>,
+    document.body,
   );
 }
 

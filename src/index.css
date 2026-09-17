@@ -393,6 +393,11 @@ h1, h2, h3, h4, p {
 
 .tabbar {
   flex: none;
+  /* Positioned so its place in the stack is explicit: above the page, below
+     any sheet. Without this it is a static element and the ordering depends on
+     whichever ancestor happens to create a stacking context. */
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   height: calc(var(--tabbar-h) + var(--sab));
@@ -429,13 +434,28 @@ h1, h2, h3, h4, p {
 
 /* ─── Sheets & overlays ─────────────────────────────────────────────────── */
 
+/* Fixed overlay that every sheet is portalled into. Fixed rather than absolute
+   so no ancestor's stacking context or scroll container can trap it, and width
+   matched to .app so it lines up on a wide screen. */
+.sheet-layer {
+  position: fixed;
+  inset: 0;
+  max-width: 520px;
+  margin: 0 auto;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.sheet-layer > * {
+  pointer-events: auto;
+}
+
 .scrim {
   position: absolute;
   inset: 0;
   background: rgba(10, 20, 18, 0.45);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 40;
   animation: fade 0.18s ease;
 }
 
@@ -444,7 +464,9 @@ h1, h2, h3, h4, p {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  /* Never taller than the screen; long sheets scroll internally. */
+  max-height: 88dvh;
+  overflow-y: auto;
   background: var(--surface);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: 10px max(var(--gutter), var(--sal)) calc(var(--sab) + 18px);
