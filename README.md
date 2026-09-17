@@ -43,19 +43,11 @@ Two honest limits to this route:
 
 **On GitHub Pages — a permanent URL, but a public one:**
 
-Publishing to Pages puts the built app on `https://<user>.github.io/DuoSemetics/`,
-which is public **even though this repository is private**. Nothing in the app is
-sensitive — there is no account, no server and no data leaving the device — but it
-is worth knowing before you turn it on.
+The app is live at **https://rasraey.github.io/DuoSemetics/**, deployed by
+`.github/workflows/deploy.yml` on every push to the default branch.
 
-One-time setup, which only a repository admin can do and which cannot be
-automated — creating a Pages site needs rights `GITHUB_TOKEN` does not have:
-
-> Settings → Pages → Source → **GitHub Actions**
-
-After that every push deploys. Pages on a private repository needs a paid plan;
-on the free plan that Settings page will say so, and the repository has to be
-public instead.
+If Pages ever needs re-enabling, a repository admin does it once under
+Settings → Pages → Source → **GitHub Actions**.
 
 For a private permanent URL instead, `npm run build` and serve `dist/` anywhere
 that supports password protection — it is a folder of static files.

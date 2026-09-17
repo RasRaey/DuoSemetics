@@ -56,8 +56,11 @@ type, so when adding content, check the ids resolve.
 
 The default branch is `claude/tigrigna-learning-app-tiw5q3` — GitHub made the
 first pushed branch the default, and there is no `main`. The repository is
-private; the Pages deploy workflow is manual because publishing would put the
-built app on a public URL regardless.
+public, and every push to that branch deploys to
+https://rasraey.github.io/DuoSemetics/ via `.github/workflows/deploy.yml`.
+
+Because the deployed URL is live, a push is a publish. Keep `npm run build`,
+`check:content` and both browser tests green before pushing.
 
 ## Progress is origin-scoped
 
