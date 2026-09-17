@@ -6,10 +6,16 @@ name: Deploy to GitHub Pages
 # here: the app has no account, no server and no analytics, and all progress
 # lives in localStorage on the device.
 #
-# `enablement: true` on configure-pages creates the Pages site itself using the
-# pages:write permission below, so there is no manual Settings step. Note that
-# Pages on a *private* repository needs a paid plan; on the free plan this step
-# fails and the repository has to be public instead.
+# One-time setup, which only a repository admin can do:
+#   Settings -> Pages -> Source -> GitHub Actions
+#
+# This cannot be automated. configure-pages has an `enablement: true` option,
+# but creating a Pages site needs admin rights that GITHUB_TOKEN does not have
+# — it fails with "Resource not accessible by integration" no matter what the
+# permissions block below says.
+#
+# Pages on a *private* repository also needs a paid plan. On the free plan the
+# Settings page will say so, and the repository has to be public instead.
 on:
   push:
     branches: [claude/tigrigna-learning-app-tiw5q3]
@@ -42,9 +48,6 @@ jobs:
       # BASE_PATH must match the repository name for a project Pages site.
       - run: npm run build:pages
       - uses: actions/configure-pages@v5
-        with:
-          # Create the Pages site if it does not exist yet.
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
