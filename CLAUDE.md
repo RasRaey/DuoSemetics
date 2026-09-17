@@ -62,6 +62,12 @@ https://rasraey.github.io/DuoSemetics/ via `.github/workflows/deploy.yml`.
 Because the deployed URL is live, a push is a publish. Keep `npm run build`,
 `check:content` and both browser tests green before pushing.
 
+Enabling Pages itself is a manual, admin-only step (Settings → Pages → Source →
+GitHub Actions). `configure-pages` with `enablement: true` was tried twice, on
+both a private and a public repository, and failed identically —
+`Resource not accessible by integration`. GITHUB_TOKEN cannot create a Pages
+site. Don't retry it.
+
 ## Progress is origin-scoped
 
 `localStorage` belongs to one origin, so the same app served from a LAN address
