@@ -82,6 +82,19 @@ page.on('console', (m) => {
   errors.push(`console: ${m.text()}`);
 });
 
+/**
+ * The first run in a browser tab on iOS shows a sheet explaining that an
+ * installed app keeps separate storage. The test context uses an iPhone user
+ * agent, so it gets that sheet too — and its scrim swallows every click.
+ */
+async function dismissInstallHint(page) {
+  const got = page.getByRole('button', { name: 'Got it' });
+  if (await got.count()) {
+    await got.click();
+    await page.waitForTimeout(350);
+  }
+}
+
 const shot = async (name) => {
   await page.screenshot({ path: join(SHOTS, `${name}.png`) });
   console.log(`  📸 ${name}`);
@@ -90,6 +103,7 @@ const shot = async (name) => {
 console.log('▸ opening the path');
 await page.goto(`http://localhost:${PORT}/?e2e=1`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
+await dismissInstallHint(page);
 await shot('01-path');
 
 /**
@@ -209,6 +223,7 @@ console.log('▸ checking progress survives a reload');
 await page.getByRole('button', { name: /Learn$/ }).click();
 await page.reload({ waitUntil: 'networkidle' });
 await page.waitForTimeout(700);
+await dismissInstallHint(page);
 const xpKept = await page.evaluate(() => {
   const raw = localStorage.getItem('duosemetics.progress.v1');
   return raw ? JSON.parse(raw).xp : 0;
@@ -221,6 +236,7 @@ const darkCtx = await browser.newContext({ ...PHONE, colorScheme: 'dark' });
 const dark = await darkCtx.newPage();
 await dark.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
 await dark.waitForTimeout(800);
+await dismissInstallHint(dark);
 await dark.screenshot({ path: join(SHOTS, '15-dark.png') });
 console.log('  📸 15-dark');
 

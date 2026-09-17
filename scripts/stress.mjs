@@ -57,7 +57,9 @@ async function phone(doneNodes = [], gems = 400, startHearts = 5) {
         xp: 120, gems, hearts: startHearts, heartsAt: Date.now(),
         streak: 3, lastDay: null, bestStreak: 3, freezes: 0, xpByDay: {},
         nodes: done, srs: {}, mistakes: [],
-        settings: { sound: false, translit: true, theme: 'system', reduceMotion: false, dailyGoal: 30, unlimitedHearts: false },
+        // installHintSeen suppresses the first-run "add to Home Screen" sheet,
+        // whose scrim would otherwise swallow every click in these tests.
+        settings: { sound: false, translit: true, theme: 'system', reduceMotion: false, dailyGoal: 30, unlimitedHearts: false, installHintSeen: true },
       }));
     }, { nodes: doneNodes, gems, startHearts });
   }
