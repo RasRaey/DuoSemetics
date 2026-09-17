@@ -1,16 +1,16 @@
 name: Deploy to GitHub Pages
 
-# Deliberately manual. Publishing to GitHub Pages puts the built app on a
-# public URL, which this repository being private does not change — so the
-# deploy is triggered by hand rather than by every push.
+# Publishes the built app to https://<user>.github.io/DuoSemetics/.
 #
-# To publish: Settings -> Pages -> Source -> GitHub Actions (once), then run
-# this workflow from the Actions tab. To go back to deploying automatically,
-# uncomment the push trigger below.
+# That URL is public even though this repository is private — which is fine
+# here: the app has no account, no server and no analytics, and all progress
+# lives in localStorage on the device.
+#
+# Requires Settings -> Pages -> Source -> GitHub Actions to have been set once.
 on:
+  push:
+    branches: [claude/tigrigna-learning-app-tiw5q3]
   workflow_dispatch:
-  # push:
-  #   branches: [claude/tigrigna-learning-app-tiw5q3]
 
 # Allow one concurrent deployment, and let a newer push supersede a running one.
 concurrency:
