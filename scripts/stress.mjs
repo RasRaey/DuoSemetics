@@ -75,6 +75,27 @@ async function phone(doneNodes = [], gems = 400, startHearts = 5) {
   return page;
 }
 
+/**
+ * Tap Continue if it is still there.
+ *
+ * With "skip ahead when correct" on, a right answer advances by itself after a
+ * beat, so the button may already be gone. A wrong answer, an almost-right one,
+ * or an exercise with a grammar tip still waits for a tap.
+ */
+async function continueIfWaiting(page) {
+  const btn = page.getByRole('button', { name: 'Continue' });
+  for (let i = 0; i < 12; i++) {
+    if (!(await btn.count())) return;
+    try {
+      await btn.click({ timeout: 800 });
+      return;
+    } catch {
+      // It advanced on its own between the count and the click.
+      if (!(await btn.count())) return;
+    }
+  }
+}
+
 const hearts = (page) => page.evaluate(() =>
   JSON.parse(localStorage.getItem('duosemetics.progress.v1') ?? '{"hearts":5}').hearts);
 
@@ -98,7 +119,7 @@ console.log('\n▸ answering wrong: hearts, feedback, re-queue');
   await page.screenshot({ path: join(SHOTS, 's1-wrong.png') });
   check('a heart is spent', (await hearts(page)) === 4, `hearts now ${await hearts(page)}`);
 
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await continueIfWaiting(page);
   await page.waitForTimeout(400);
 
   // A missed exercise must come back later in the same lesson.
@@ -111,7 +132,7 @@ console.log('\n▸ answering wrong: hearts, feedback, re-queue');
     if (!(await c.count())) break;
     await c.click();
     await page.waitForTimeout(220);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(200);
   }
   check('missed exercise is re-queued', cameBack);
@@ -132,7 +153,7 @@ console.log('\n▸ burning all five hearts');
     await page.waitForTimeout(140);
     await page.getByRole('button', { name: 'Check' }).click();
     await page.waitForTimeout(260);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(350);
   }
   check('hearts reach zero', (await hearts(page)) === 0, `hearts ${await hearts(page)}`);
@@ -169,7 +190,7 @@ console.log('\n▸ a Fidel lesson');
     await c.click();
     await page.waitForTimeout(230);
     if (await page.getByText('Not quite').count()) { problems.push('fidel: correct answer marked wrong'); break; }
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(190);
   }
   check('fidel lesson completes', (await page.getByText('Lesson complete').count()) > 0, `${steps} steps`);
@@ -226,7 +247,7 @@ console.log('\n▸ a unit review');
     await c.click();
     await page.waitForTimeout(230);
     if (await page.getByText('Not quite').count()) { problems.push('review: correct answer marked wrong'); break; }
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(190);
   }
   check('unit review completes', (await page.getByText('Lesson complete').count()) > 0, `${steps} steps`);
@@ -276,7 +297,7 @@ console.log('\n▸ practice with no hearts left');
   await page.waitForTimeout(400);
   check('a mistake does not end it', (await page.getByText('You’re out of hearts').count()) === 0);
   check('hearts stay at zero', (await hearts(page)) === 0, `hearts ${await hearts(page)}`);
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await continueIfWaiting(page);
   await page.waitForTimeout(300);
   check('session continues', (await page.getByRole('button', { name: 'Check' }).count()) > 0);
 
@@ -302,14 +323,14 @@ console.log('\n▸ practice with no hearts left');
     if (!(await c.count())) break;
     await c.click();
     await page.waitForTimeout(220);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(190);
   }
   check('practice session finishes', (await page.getByText('Lesson complete').count()) > 0, `${steps} steps`);
   check('summary shows the earned heart', (await page.getByText('+1 heart').count()) > 0);
   await page.screenshot({ path: join(SHOTS, 's7-heart-earned.png') });
   while ((await page.getByRole('button', { name: 'Continue' }).count()) > 0) {
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(500);
   }
   check('heart is actually banked', (await hearts(page)) === 1, `hearts ${await hearts(page)}`);
@@ -328,7 +349,7 @@ console.log('\n▸ out-of-hearts sheet offers practice');
   await page.waitForTimeout(140);
   await page.getByRole('button', { name: 'Check' }).click();
   await page.waitForTimeout(260);
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await continueIfWaiting(page);
   await page.waitForTimeout(500);
 
   check('sheet appears at zero', (await page.getByText('You’re out of hearts').count()) > 0);
@@ -360,7 +381,7 @@ console.log('\n▸ match round does not leak answers');
     if (!(await c.count())) break;
     await c.click();
     await page.waitForTimeout(200);
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(170);
   }
   const reached = (await page.evaluate(() => window.__e2e?.type)) === 'match_pairs';
@@ -392,6 +413,70 @@ console.log('\n▸ match round does not leak answers');
     void tiles;
   }
   await page.context().close();
+}
+
+// ─── 10. Correct answers move on by themselves ───────────────────────────
+console.log('\n▸ skip ahead when correct');
+{
+  const page = await phone();
+  await page.getByRole('button', { name: /^Hello/ }).first().click();
+  await page.waitForTimeout(350);
+  await page.getByRole('button', { name: /Start/ }).click();
+  await page.waitForTimeout(500);
+
+  // A right answer: no tap, the next exercise should arrive on its own.
+  const before = await page.evaluate(() => window.__e2e.type + '|' + JSON.stringify(window.__e2e.pairs ?? null));
+  await page.evaluate(() => window.__e2e.solve());
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Check' }).click();
+  await page.waitForTimeout(300);
+  check('shows the correct banner first', (await page.getByText('Nice.').count()) > 0);
+  await page.waitForTimeout(900);
+  check(
+    'advanced without a tap',
+    (await page.getByRole('button', { name: 'Check' }).count()) > 0,
+    (await page.getByRole('button', { name: 'Continue' }).count()) ? 'still waiting' : 'moved on',
+  );
+  void before;
+
+  // A wrong answer must still wait, so the right answer can be read.
+  await page.evaluate(() => window.__e2e.fail());
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Check' }).click();
+  await page.waitForTimeout(1400);
+  check('a wrong answer waits for a tap', (await page.getByRole('button', { name: 'Continue' }).count()) > 0);
+  check('and keeps the solution on screen', (await page.getByText('Correct answer').count()) > 0);
+  await page.screenshot({ path: join(SHOTS, 's10-wrong-waits.png') });
+  await page.context().close();
+}
+
+// ─── 11. The setting turns it off ────────────────────────────────────────
+console.log('\n▸ skip ahead can be switched off');
+{
+  const ctx = await browser.newContext(PHONE);
+  await ctx.addInitScript(() => {
+    localStorage.setItem('duosemetics.progress.v1', JSON.stringify({
+      version: 1, name: 'Tester', avatar: '🦁', joined: Date.now(),
+      xp: 0, gems: 50, hearts: 5, heartsAt: Date.now(),
+      streak: 0, lastDay: null, bestStreak: 0, freezes: 0, xpByDay: {},
+      nodes: {}, srs: {}, mistakes: [],
+      settings: { sound: false, translit: true, theme: 'system', reduceMotion: false,
+        dailyGoal: 30, unlimitedHearts: false, installHintSeen: true, autoContinue: false },
+    }));
+  });
+  const page = await ctx.newPage();
+  await page.goto('http://localhost:4188/?e2e=1', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(700);
+  await page.getByRole('button', { name: /^Hello/ }).first().click();
+  await page.waitForTimeout(350);
+  await page.getByRole('button', { name: /Start/ }).click();
+  await page.waitForTimeout(500);
+  await page.evaluate(() => window.__e2e.solve());
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Check' }).click();
+  await page.waitForTimeout(1400);
+  check('with the setting off it waits', (await page.getByRole('button', { name: 'Continue' }).count()) > 0);
+  await ctx.close();
 }
 
 await browser.close();

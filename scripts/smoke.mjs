@@ -95,6 +95,27 @@ async function dismissInstallHint(page) {
   }
 }
 
+/**
+ * Tap Continue if it is still there.
+ *
+ * With "skip ahead when correct" on, a right answer advances by itself after a
+ * beat, so the button may already be gone. A wrong answer, an almost-right one,
+ * or an exercise with a grammar tip still waits for a tap.
+ */
+async function continueIfWaiting(page) {
+  const btn = page.getByRole('button', { name: 'Continue' });
+  for (let i = 0; i < 12; i++) {
+    if (!(await btn.count())) return;
+    try {
+      await btn.click({ timeout: 800 });
+      return;
+    } catch {
+      // It advanced on its own between the count and the click.
+      if (!(await btn.count())) return;
+    }
+  }
+}
+
 const shot = async (name) => {
   await page.screenshot({ path: join(SHOTS, `${name}.png`) });
   console.log(`  📸 ${name}`);
@@ -169,7 +190,7 @@ async function playLesson(nodeName, shotPrefix) {
       await shot('05-feedback');
       feedbackShot = true;
     }
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await continueIfWaiting(page);
     await page.waitForTimeout(220);
   }
 

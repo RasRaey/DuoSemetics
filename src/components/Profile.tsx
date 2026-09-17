@@ -172,6 +172,12 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
           onChange={(v) => onSettings({ translit: v })}
         />
         <Toggle
+          label="Skip ahead when correct"
+          sub="Move on without tapping Continue"
+          on={p.settings.autoContinue}
+          onChange={(v) => onSettings({ autoContinue: v })}
+        />
+        <Toggle
           label="Unlimited hearts"
           sub="Practise without losing hearts for mistakes"
           on={p.settings.unlimitedHearts}

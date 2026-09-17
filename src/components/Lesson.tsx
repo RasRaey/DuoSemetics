@@ -45,6 +45,8 @@ interface Props {
   title: string;
   hearts: number;
   unlimitedHearts: boolean;
+  /** Move on automatically after a plainly correct answer. */
+  autoContinue?: boolean;
   /**
    * Whether mistakes spend hearts. False for practice sessions, which are the
    * way back when hearts have run out and so must never consume them.
@@ -75,11 +77,20 @@ const REQUEUE_GAP = 3;
 const E2E =
   typeof location !== 'undefined' && new URLSearchParams(location.search).has('e2e');
 
+/**
+ * How long a correct answer stays on screen before moving on by itself.
+ *
+ * Long enough for the green banner and its sound to register, short enough that
+ * a run of right answers does not feel like tapping Continue for a living.
+ */
+const AUTO_ADVANCE_MS = 650;
+
 export function Lesson({
   exercises,
   title,
   hearts,
   unlimitedHearts,
+  autoContinue = true,
   costHearts = true,
   showTr,
   onAnswer,
@@ -190,12 +201,10 @@ export function Lesson({
     setResultState({ key: ex.key, value: r });
   };
 
-  const advance = () => {
-    if (!ex) return;
-    const wasCorrect = result?.correct ?? false;
-
+  const advance = useCallback((wasCorrect: boolean) => {
     setQueue((q) => {
       const [head, ...rest] = q;
+      if (!head) return q;
       if (wasCorrect) return rest;
       // Put it back a few slots away so it is a real recall test, not an echo.
       const at = Math.min(REQUEUE_GAP, rest.length);
@@ -207,7 +216,27 @@ export function Lesson({
     } else {
       setTotal((t) => t + 1);
     }
-  };
+  }, []);
+
+  /**
+   * Move on by itself once an answer is plainly right.
+   *
+   * Driven by an effect rather than a timer started in `check`, so it cleans up
+   * on its own: tapping Continue clears `result`, the effect re-runs and the
+   * pending timeout is cancelled — no double advance, no stray timer left
+   * behind when the lesson ends.
+   *
+   * Held back in the two cases where the feedback is the point: an answer that
+   * was only *almost* right, where the polished spelling is worth reading, and
+   * an exercise carrying a grammar tip.
+   */
+  useEffect(() => {
+    if (!autoContinue || !result || !ex) return;
+    if (result.verdict !== 'correct') return;
+    if ('tip' in ex && ex.tip) return;
+    const t = window.setTimeout(() => advance(true), AUTO_ADVANCE_MS);
+    return () => window.clearTimeout(t);
+  }, [autoContinue, result, ex, advance]);
 
   // When the queue empties, the lesson is done.
   useEffect(() => {
@@ -290,7 +319,7 @@ export function Lesson({
           result={result}
           ready={ready}
           onCheck={check}
-          onContinue={advance}
+          onContinue={() => advance(result?.correct ?? false)}
           tip={'tip' in ex ? ex.tip : undefined}
         />
       )}

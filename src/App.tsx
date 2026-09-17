@@ -260,6 +260,7 @@ export default function App() {
         title={active.title}
         hearts={p.hearts}
         unlimitedHearts={p.settings.unlimitedHearts}
+        autoContinue={p.settings.autoContinue}
         // Free practice has no node, and never spends hearts.
         costHearts={active.nodeId !== null}
         showTr={p.settings.translit}

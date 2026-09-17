@@ -40,6 +40,8 @@ export interface Settings {
   unlimitedHearts: boolean;
   /** The "install me, storage is separate" notice has been dismissed. */
   installHintSeen: boolean;
+  /** Move straight on after a correct answer instead of waiting for a tap. */
+  autoContinue: boolean;
 }
 
 export interface Progress {
@@ -107,6 +109,7 @@ export function initialProgress(): Progress {
       dailyGoal: 30,
       unlimitedHearts: false,
       installHintSeen: false,
+      autoContinue: true,
     },
   };
 }

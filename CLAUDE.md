@@ -131,6 +131,18 @@ translation. Selection and the wrong-pair flash therefore key on `side:id`;
 only *clearing* is per pair, since matched tiles do leave together. The stress
 test asserts one tap highlights exactly one tile.
 
+## Skipping ahead
+
+A plainly correct answer advances on its own after `AUTO_ADVANCE_MS`, driven by
+an effect in `Lesson.tsx` keyed on `result` — not a timer started inside
+`check`, so tapping Continue cancels it through the effect's own cleanup rather
+than needing a guard. It deliberately does *not* fire when the verdict is
+`almost` (the corrected spelling is the point) or when the exercise carries a
+grammar tip. `settings.autoContinue` turns it off.
+
+Tests must therefore tap Continue only if it is still there — both scripts have
+`continueIfWaiting(page)` for that.
+
 ## The hearts loop
 
 Practice must stay free and must keep handing a heart back on completion

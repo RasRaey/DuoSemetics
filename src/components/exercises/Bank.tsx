@@ -152,7 +152,9 @@ export function TranslateTypeEx({
       <textarea
         value={value[0] ?? ''}
         onChange={(e) => onChange([e.target.value])}
-        disabled={locked}
+        // readOnly rather than disabled: a disabled textarea is greyed out by
+        // the platform, which made a graded answer look like placeholder text.
+        readOnly={locked}
         rows={3}
         placeholder="Type in English…"
         autoCapitalize="sentences"
@@ -166,6 +168,8 @@ export function TranslateTypeEx({
           fontWeight: 700,
           fontFamily: 'var(--font)',
           color: 'var(--ink)',
+          opacity: 1,
+          WebkitTextFillColor: 'var(--ink)',
           background: 'var(--surface-2)',
           border: '2px solid var(--line)',
           borderRadius: 'var(--r-md)',
