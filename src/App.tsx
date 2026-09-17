@@ -275,6 +275,7 @@ export default function App() {
           }
           onRename={(name, avatar) => set((prev) => ({ ...prev, name, avatar }))}
           onReset={reset}
+          onRestore={(restored) => set(() => restored)}
         />
       )}
 

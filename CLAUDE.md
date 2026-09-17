@@ -59,6 +59,19 @@ first pushed branch the default, and there is no `main`. The repository is
 private; the Pages deploy workflow is manual because publishing would put the
 built app on a public URL regardless.
 
+## Progress is origin-scoped
+
+`localStorage` belongs to one origin, so the same app served from a LAN address
+and from a hosted URL are two separate save files. `exportProgress` /
+`importProgress` in `engine/store.ts` and the **Back up or move** sheet in
+`Profile.tsx` exist for that move. Keep the backup envelope
+(`{ app: 'duosemetics', version, exportedAt, progress }`) stable, and route
+restores through `importProgress` so an older backup gets migrated rather than
+written in raw.
+
+Offline needs a service worker, which needs a secure context. Over plain HTTP on
+a LAN address there is no offline — only on HTTPS, or localhost.
+
 ## Testing
 
 `npm run build && node scripts/smoke.mjs` plays a real lesson end to end at phone

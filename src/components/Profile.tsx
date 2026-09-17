@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import {
   MAX_HEARTS,
   REFILL_COST,
+  exportProgress,
+  importProgress,
   msToNextHeart,
   todayKey,
   type Progress,
@@ -23,12 +25,14 @@ interface Props {
   onSettings: (patch: Partial<Settings>) => void;
   onRename: (name: string, avatar: string) => void;
   onReset: () => void;
+  onRestore: (p: Progress) => void;
 }
 
 /** Profile, shop and settings — everything that isn't learning. */
-export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onReset }: Props) {
+export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onReset, onRestore }: Props) {
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [transfer, setTransfer] = useState(false);
   const [name, setName] = useState(p.name);
   const [avatar, setAvatar] = useState(p.avatar);
 
@@ -220,6 +224,26 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
         </Row>
       </div>
 
+      {/* ─── Move to another device or address ──────────────────────────── */}
+      <h3 className="h3" style={{ marginBottom: 8 }}>Your progress</h3>
+      <button
+        className="card row"
+        onClick={() => {
+          sfxTap();
+          setTransfer(true);
+        }}
+        style={{ gap: 13, padding: '13px 14px', textAlign: 'left', width: '100%', marginBottom: 20 }}
+      >
+        <span style={{ fontSize: 26 }}>📦</span>
+        <div className="col grow" style={{ gap: 2, minWidth: 0 }}>
+          <span className="h3" style={{ fontSize: 15 }}>Back up or move</span>
+          <span className="tiny muted">
+            Carry your streak to another device, or to a new address
+          </span>
+        </div>
+        <span className="muted" style={{ fontSize: 20 }}>›</span>
+      </button>
+
       {/* ─── Audio honesty note ─────────────────────────────────────────── */}
       <div
         className="col"
@@ -290,6 +314,10 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
             Save
           </Btn>
         </div>
+      </Sheet>
+
+      <Sheet open={transfer} onClose={() => setTransfer(false)}>
+        <TransferSheet p={p} onRestore={(next) => { onRestore(next); setTransfer(false); }} />
       </Sheet>
 
       <Sheet open={confirmReset} onClose={() => setConfirmReset(false)}>
@@ -442,3 +470,185 @@ function Toggle({
     </button>
   );
 }
+
+/**
+ * Backup and restore.
+ *
+ * Progress lives in localStorage, which belongs to one origin. Opening the app
+ * from a different address — a laptop's LAN URL versus a hosted one — is a
+ * different origin and therefore a blank slate, so this is how a streak
+ * survives the move.
+ *
+ * Both a file and the clipboard are offered because neither is reliable on its
+ * own: iOS makes downloads awkward, and clipboard access is blocked outside a
+ * secure context, which a plain http:// LAN address is not.
+ */
+function TransferSheet({ p, onRestore }: { p: Progress; onRestore: (p: Progress) => void }) {
+  const [mode, setMode] = useState<'out' | 'in'>('out');
+  const [copied, setCopied] = useState(false);
+  const [pasted, setPasted] = useState('');
+  const [pending, setPending] = useState<{ progress: Progress; summary: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const json = exportProgress(p);
+
+  const download = () => {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `duosemetics-${todayKey()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(json);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard needs a secure context; the textarea below is the fallback.
+      setCopied(false);
+    }
+  };
+
+  const check = (text: string) => {
+    const r = importProgress(text);
+    if (!r.ok || !r.progress) {
+      setError(r.error ?? 'That backup could not be read.');
+      setPending(null);
+      return;
+    }
+    setError(null);
+    setPending({ progress: r.progress, summary: r.summary ?? '' });
+  };
+
+  return (
+    <div className="col" style={{ gap: 13, paddingBottom: 6 }}>
+      <div className="h2">Back up or move</div>
+      <div className="small muted">
+        Your progress is stored by this device, for this exact web address. Opening
+        the app from a different address starts you over — so save a backup first,
+        then restore it there.
+      </div>
+
+      <div className="row" style={{ gap: 6 }}>
+        {(['out', 'in'] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => {
+              sfxTap();
+              setMode(m);
+              setError(null);
+              setPending(null);
+            }}
+            style={{
+              flex: 1,
+              padding: '9px 0',
+              borderRadius: 999,
+              fontSize: 13,
+              fontWeight: 800,
+              background: mode === m ? 'var(--green)' : 'var(--surface-2)',
+              color: mode === m ? '#fff' : 'var(--muted)',
+              border: `2px solid ${mode === m ? 'var(--green)' : 'var(--line)'}`,
+            }}
+          >
+            {m === 'out' ? 'Save a backup' : 'Restore'}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'out' ? (
+        <>
+          <div className="row" style={{ gap: 8 }}>
+            <Btn tone="blue" onClick={download}>⬇︎ Save file</Btn>
+            <Btn tone="ghost" onClick={copy}>{copied ? '✓ Copied' : '⧉ Copy'}</Btn>
+          </div>
+          <div className="tiny muted">
+            Or select the text below and copy it by hand:
+          </div>
+          <textarea
+            readOnly
+            value={json}
+            onFocus={(e) => e.currentTarget.select()}
+            rows={4}
+            style={transferBox}
+          />
+        </>
+      ) : (
+        <>
+          <input
+            type="file"
+            accept="application/json,.json"
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              if (f) check(await f.text());
+            }}
+            style={{ fontSize: 13, fontWeight: 700 }}
+          />
+          <div className="tiny muted">Or paste a backup here:</div>
+          <textarea
+            value={pasted}
+            onChange={(e) => {
+              setPasted(e.target.value);
+              if (e.target.value.trim()) check(e.target.value);
+              else {
+                setError(null);
+                setPending(null);
+              }
+            }}
+            rows={4}
+            placeholder='{ "app": "duosemetics", … }'
+            style={transferBox}
+          />
+
+          {error && (
+            <div className="small" style={{ color: 'var(--red-ink)' }}>{error}</div>
+          )}
+          {pending && (
+            <div
+              className="col"
+              style={{
+                gap: 4,
+                padding: '11px 14px',
+                borderRadius: 'var(--r-md)',
+                background: 'var(--green-soft)',
+              }}
+            >
+              <span className="h3" style={{ fontSize: 14, color: 'var(--green-ink)' }}>
+                Backup found
+              </span>
+              <span className="tiny" style={{ color: 'var(--ink-2)' }}>{pending.summary}</span>
+            </div>
+          )}
+          <Btn
+            tone="green"
+            disabled={!pending}
+            onClick={() => pending && onRestore(pending.progress)}
+          >
+            Replace my progress
+          </Btn>
+          <div className="tiny muted">
+            This overwrites whatever is on this device. Save a backup of it first if
+            you might want it back.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+const transferBox: React.CSSProperties = {
+  width: '100%',
+  resize: 'none',
+  padding: 11,
+  fontSize: 11,
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontWeight: 500,
+  color: 'var(--ink-2)',
+  background: 'var(--surface-2)',
+  border: '2px solid var(--line)',
+  borderRadius: 'var(--r-md)',
+  outline: 'none',
+};

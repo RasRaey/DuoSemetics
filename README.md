@@ -25,12 +25,21 @@ keeps working without a connection, and stores progress on the device.
 
 ```bash
 npm install
-npm run dev -- --host     # prints a http://192.168.x.x:5173 address
+npm run phone     # builds, then serves on http://192.168.x.x:4173
 ```
 
-Open that address on the phone. The catch is that your computer has to be awake
-and on the same network; once the app is installed and its files are cached it
-will still open offline, but it is not a permanent home for it.
+Open the `Network:` address it prints on the phone. Use `npm run phone` rather
+than `npm run dev`: it serves a real production build, so what you see matches
+what a deploy would serve.
+
+Two honest limits to this route:
+
+- **It does not work offline.** Service workers need a secure context — HTTPS, or
+  `localhost` — and a plain `http://192.168.x.x` address is neither, so iOS will
+  not register one. The app installs to the Home Screen and runs full-screen, but
+  it needs your computer awake and on the same network *every* time you open it.
+  Offline only starts working once it is served over HTTPS.
+- **Progress is tied to the address.** See below.
 
 **On GitHub Pages — a permanent URL, but a public one:**
 
@@ -51,6 +60,17 @@ public instead.
 For a private permanent URL instead, `npm run build` and serve `dist/` anywhere
 that supports password protection — it is a folder of static files.
 
+### Moving between addresses without losing your streak
+
+Progress lives in `localStorage`, which browsers scope to a single origin. A LAN
+address and a hosted URL are different origins, so moving between them starts you
+from zero unless you carry your progress across.
+
+**You → Back up or move** does that: save a file (or copy the text), then restore
+it on the other address. XP, streak, gems, crown levels and every word's strength
+come across intact. Restoring asks you to confirm and refuses anything that is not
+a DuoSemetics backup.
+
 ## Running it
 
 ```bash
@@ -61,6 +81,7 @@ npm run preview      # serve the build
 npm run typecheck    # tsc, no emit
 npm run lint         # oxlint
 npm run icons        # regenerate icons + splash screens from scripts/icons.mjs
+npm run phone        # build, then serve on the LAN for a phone to open
 npm run check:content # generate every lesson and assert each one is solvable
 npm run test:e2e     # build, then play two full lessons in Chromium at phone size
 ```
@@ -182,4 +203,5 @@ by the gender of who you are addressing, both forms are taught.
 ## Privacy
 
 Everything is stored in `localStorage` on the device. There is no account, no server,
-no analytics, and no network request except the Google Fonts stylesheet.
+no analytics, and no network request except the Google Fonts stylesheet. Backups are
+plain JSON that never leave the device unless you send them somewhere yourself.

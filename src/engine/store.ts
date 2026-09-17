@@ -341,3 +341,69 @@ export function useProgress(): Store {
 
   return useMemo(() => ({ p, set, reset }), [p, set, reset]);
 }
+
+// ─── Backup & restore ────────────────────────────────────────────────────
+
+/**
+ * Progress lives in localStorage, which is scoped to an origin. Moving the app
+ * between origins — a LAN address to a hosted URL, say — leaves the old
+ * progress behind, so it has to be carried across by hand.
+ */
+
+export interface Backup {
+  app: 'duosemetics';
+  version: number;
+  exportedAt: string;
+  progress: Progress;
+}
+
+export function exportProgress(p: Progress): string {
+  const backup: Backup = {
+    app: 'duosemetics',
+    version: VERSION,
+    exportedAt: new Date().toISOString(),
+    progress: p,
+  };
+  return JSON.stringify(backup, null, 2);
+}
+
+export interface ImportResult {
+  ok: boolean;
+  progress?: Progress;
+  error?: string;
+  /** A short human summary of what the backup holds, for the confirm step. */
+  summary?: string;
+}
+
+/**
+ * Parse and validate a backup. Deliberately strict about the envelope and
+ * forgiving about the contents: `migrate` fills in anything a backup from an
+ * older build is missing, so a valid-but-outdated file still restores.
+ */
+export function importProgress(json: string): ImportResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json.trim());
+  } catch {
+    return { ok: false, error: 'That does not look like a backup file — it is not valid JSON.' };
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    return { ok: false, error: 'That backup is empty.' };
+  }
+  const b = parsed as Partial<Backup>;
+  if (b.app !== 'duosemetics' || !b.progress) {
+    return { ok: false, error: 'That is a JSON file, but not a DuoSemetics backup.' };
+  }
+
+  const progress = settleHearts(migrate(b.progress));
+  const words = Object.keys(progress.srs).length;
+  const lessons = Object.values(progress.nodes).reduce((n, s) => n + s.completed, 0);
+  const when = b.exportedAt ? new Date(b.exportedAt).toLocaleDateString() : 'an unknown date';
+
+  return {
+    ok: true,
+    progress,
+    summary: `${progress.xp} XP · ${progress.streak} day streak · ${words} words · ${lessons} lessons · saved ${when}`,
+  };
+}

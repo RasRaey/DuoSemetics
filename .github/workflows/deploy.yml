@@ -16,10 +16,12 @@ name: Deploy to GitHub Pages
 #
 # Pages on a *private* repository also needs a paid plan. On the free plan the
 # Settings page will say so, and the repository has to be public instead.
+# Manual until Pages is enabled, so pushes don't pile up failed runs. Uncomment
+# the push trigger once Settings -> Pages -> Source is set to GitHub Actions.
 on:
-  push:
-    branches: [claude/tigrigna-learning-app-tiw5q3]
   workflow_dispatch:
+  # push:
+  #   branches: [claude/tigrigna-learning-app-tiw5q3]
 
 # Allow one concurrent deployment, and let a newer push supersede a running one.
 concurrency:

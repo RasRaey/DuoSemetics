@@ -12,7 +12,8 @@
     "typecheck": "tsc -b --noEmit",
     "icons": "node scripts/icons.mjs",
     "check:content": "node scripts/check-content.mjs",
-    "test:e2e": "npm run build && node scripts/smoke.mjs"
+    "test:e2e": "npm run build && node scripts/smoke.mjs",
+    "phone": "npm run build && vite preview --host --port 4173"
   },
   "dependencies": {
     "react": "^19.2.8",
