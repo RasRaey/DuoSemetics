@@ -16,6 +16,7 @@ import {
   type Settings,
 } from './engine/store';
 import { setSoundEnabled, unlockAudio } from './audio/sfx';
+import { isIOS, isStandalone, requestPersistence } from './engine/storage';
 import { Path } from './components/Path';
 import { Lesson, type LessonOutcome } from './components/Lesson';
 import { Complete, ChestScreen } from './components/Complete';
@@ -73,6 +74,12 @@ export default function App() {
 
   const current = useMemo(() => currentNodeId(p), [p]);
 
+  // On iOS a Safari tab and an installed app keep *separate* storage, so
+  // progress made in one is invisible to the other. That is the single most
+  // likely reason someone finds their streak "reset", so say it up front.
+  const showInstallHint =
+    isIOS() && !isStandalone() && !p.settings.installHintSeen && !active && !summary;
+
   // ─── Global side effects ───────────────────────────────────────────────
 
   useEffect(() => {
@@ -91,6 +98,12 @@ export default function App() {
       p.settings.reduceMotion ? 'reduced' : 'full',
     );
   }, [p.settings.reduceMotion]);
+
+  // Ask the browser to keep this origin's data rather than evicting it under
+  // storage pressure. Refusal is fine; it costs nothing to ask.
+  useEffect(() => {
+    void requestPersistence();
+  }, []);
 
   // iOS blocks the audio context until the page has been touched once.
   useEffect(() => {
@@ -361,6 +374,52 @@ export default function App() {
             }}
           >
             Practise instead
+          </Btn>
+        </div>
+      </Sheet>
+
+      <Sheet
+        open={showInstallHint}
+        onClose={() =>
+          set((prev) => ({
+            ...prev,
+            settings: { ...prev.settings, installHintSeen: true },
+          }))
+        }
+      >
+        <div className="col" style={{ gap: 12, paddingBottom: 6 }}>
+          <div className="row" style={{ gap: 12 }}>
+            <Mascot mood="think" size={56} />
+            <div className="h2 grow">Add this to your Home Screen</div>
+          </div>
+          <div className="small muted" style={{ lineHeight: 1.55 }}>
+            You’re in a Safari tab. On iPhone an installed app gets its own
+            storage, separate from Safari’s — so anything you learn here
+            <strong> will not appear </strong> once you install it, and it can be
+            cleared when Safari tidies up unused sites.
+          </div>
+          <div
+            className="small"
+            style={{
+              background: 'var(--surface-2)',
+              padding: '12px 15px',
+              borderRadius: 'var(--r-md)',
+              color: 'var(--ink-2)',
+              lineHeight: 1.6,
+            }}
+          >
+            Tap <strong>Share</strong> at the bottom of Safari, then{' '}
+            <strong>Add to Home Screen</strong>. Open it from there from now on.
+          </div>
+          <Btn
+            onClick={() =>
+              set((prev) => ({
+                ...prev,
+                settings: { ...prev.settings, installHintSeen: true },
+              }))
+            }
+          >
+            Got it
           </Btn>
         </div>
       </Sheet>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NODE_BY_ID, NODE_ORDER, UNITS, nodeWordIds } from '../data/curriculum';
+import { noteSaved } from './storage';
 import { review as srsReview, type WordState } from './srs';
 
 /**
@@ -37,6 +38,8 @@ export interface Settings {
   dailyGoal: number;
   /** Hearts off — for learners who find them stressful. */
   unlimitedHearts: boolean;
+  /** The "install me, storage is separate" notice has been dismissed. */
+  installHintSeen: boolean;
 }
 
 export interface Progress {
@@ -103,6 +106,7 @@ export function initialProgress(): Progress {
       reduceMotion: false,
       dailyGoal: 30,
       unlimitedHearts: false,
+      installHintSeen: false,
     },
   };
 }
@@ -137,9 +141,13 @@ export function load(): Progress {
   }
 }
 
+/** The localStorage key holding progress, exported for the diagnostics panel. */
+export const STORAGE_KEY = KEY;
+
 export function save(p: Progress): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(p));
+    noteSaved();
   } catch {
     // Quota or blocked storage: the session still works, it just won't persist.
   }

@@ -81,6 +81,12 @@ written in raw.
 Offline needs a service worker, which needs a secure context. Over plain HTTP on
 a LAN address there is no offline — only on HTTPS, or localhost.
 
+**On iOS a Safari tab and a Home Screen app have separate storage.** Progress
+made in one is invisible to the other, which looks exactly like the app
+resetting itself. `engine/storage.ts` measures this and the Profile tab reports
+it; a first-run sheet warns anyone still in a tab. Do not remove that warning —
+it is the most likely explanation for any "my streak vanished" report.
+
 ## Testing
 
 `npm run build && node scripts/smoke.mjs` plays a real lesson end to end at phone

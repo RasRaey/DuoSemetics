@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   MAX_HEARTS,
   REFILL_COST,
+  STORAGE_KEY,
   exportProgress,
   importProgress,
   msToNextHeart,
@@ -14,6 +15,7 @@ import { WORDS } from '../data/lexicon';
 import { Bar, Btn, HeartRow, Sheet } from './ui';
 import { Mascot } from './Mascot';
 import { isApproximate, supported as ttsSupported } from '../audio/speech';
+import { health, type StorageHealth } from '../engine/storage';
 import { sfxReward, sfxTap } from '../audio/sfx';
 
 const FREEZE_COST = 200;
@@ -33,6 +35,13 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
   const [editing, setEditing] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [transfer, setTransfer] = useState(false);
+  const [storage, setStorage] = useState<StorageHealth | null>(null);
+
+  // Re-measured each time the tab is opened; storage state can change under the
+  // app without any action from it.
+  useEffect(() => {
+    void health(STORAGE_KEY).then(setStorage);
+  }, [p]);
   const [name, setName] = useState(p.name);
   const [avatar, setAvatar] = useState(p.avatar);
 
@@ -243,6 +252,9 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
         </div>
         <span className="muted" style={{ fontSize: 20 }}>›</span>
       </button>
+
+      {/* ─── Is it actually saving? ─────────────────────────────────────── */}
+      {storage && <StorageCard s={storage} />}
 
       {/* ─── Audio honesty note ─────────────────────────────────────────── */}
       <div
@@ -652,3 +664,80 @@ const transferBox: React.CSSProperties = {
   borderRadius: 'var(--r-md)',
   outline: 'none',
 };
+
+/**
+ * Storage diagnostics.
+ *
+ * "Did my progress save?" should be answerable without a debugger, especially
+ * on iOS where a Safari tab and an installed app keep separate data and losing
+ * a streak looks like an app bug.
+ */
+function StorageCard({ s }: { s: StorageHealth }) {
+  const ok = s.works;
+  const tone = !ok ? 'red' : s.ios && !s.standalone ? 'gold' : 'green';
+  const saved = s.savedAt
+    ? new Date(s.savedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    : 'nothing saved yet';
+
+  return (
+    <div
+      className="col"
+      style={{
+        gap: 8,
+        padding: '13px 15px',
+        borderRadius: 'var(--r-md)',
+        background: `var(--${tone}-soft)`,
+        marginBottom: 20,
+      }}
+    >
+      <div className="row" style={{ gap: 8 }}>
+        <span style={{ fontSize: 18 }}>{ok ? (tone === 'gold' ? '⚠️' : '✅') : '🚫'}</span>
+        <span className="h3" style={{ fontSize: 15 }}>
+          {ok ? 'Your progress is being saved' : 'Progress cannot be saved'}
+        </span>
+      </div>
+
+      <div className="tiny" style={{ color: 'var(--ink-2)', lineHeight: 1.6 }}>
+        {!ok && (
+          <>
+            This browser is blocking storage — most often that means a Private
+            Browsing window. Open the app in a normal window, and your streak
+            will start being kept.
+          </>
+        )}
+        {ok && s.ios && !s.standalone && (
+          <>
+            You’re in a Safari tab. Saving works here, but an installed app keeps
+            its <strong>own separate storage</strong> — so this progress will not
+            follow you there. Share → Add to Home Screen, and use it from there.
+          </>
+        )}
+        {ok && (!s.ios || s.standalone) && (
+          <>
+            Stored on this device only, for this web address. Use{' '}
+            <strong>Back up or move</strong> above before switching device or URL.
+          </>
+        )}
+      </div>
+
+      <div className="row wrap" style={{ gap: 10, marginTop: 2 }}>
+        <Fact label="last saved" value={saved} />
+        <Fact label="size" value={s.bytes ? `${(s.bytes / 1024).toFixed(1)} kB` : 'empty'} />
+        <Fact label="opened as" value={s.standalone ? 'installed app' : 'browser tab'} />
+        <Fact
+          label="eviction"
+          value={s.persisted === null ? 'unknown' : s.persisted ? 'protected' : 'possible'}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="col" style={{ gap: 0 }}>
+      <span className="tiny upper" style={{ opacity: 0.6, fontSize: 9 }}>{label}</span>
+      <span className="tiny" style={{ fontWeight: 800 }}>{value}</span>
+    </div>
+  );
+}

@@ -52,6 +52,18 @@ Settings → Pages → Source → **GitHub Actions**.
 For a private permanent URL instead, `npm run build` and serve `dist/` anywhere
 that supports password protection — it is a folder of static files.
 
+### Is it saving?
+
+**You → the storage card** answers that directly: whether writes are working,
+when progress was last saved, how big it is, whether the app was opened as an
+installed app or a browser tab, and whether the browser has promised not to
+evict it.
+
+Worth knowing on iPhone: **a Safari tab and a Home Screen app keep separate
+storage.** A lesson played in the tab will not appear in the installed app. The
+app warns about this on first run in a tab. Safari also clears storage for sites
+left unused for about a week, which installing avoids.
+
 ### Moving between addresses without losing your streak
 
 Progress lives in `localStorage`, which browsers scope to a single origin. A LAN
