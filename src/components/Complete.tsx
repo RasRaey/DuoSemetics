@@ -18,6 +18,8 @@ export interface CompleteProps {
   seconds: number;
   /** Gems awarded, for chest nodes. */
   gems?: number;
+  /** True when finishing this practice session handed back a heart. */
+  heartEarned?: boolean;
   streak: number;
   /** True when this session is what extended the streak. */
   streakExtended: boolean;
@@ -32,6 +34,7 @@ export function Complete({
   total,
   seconds,
   gems,
+  heartEarned,
   streak,
   streakExtended,
   xpToday,
@@ -77,6 +80,22 @@ export function Complete({
               />
               <StatTile label="Speedy" value={mmss} tone="blue" icon="⏱️" />
             </div>
+
+            {heartEarned ? (
+              <div
+                className="row pop"
+                style={{
+                  gap: 8,
+                  padding: '12px 18px',
+                  borderRadius: 'var(--r-md)',
+                  background: 'var(--red-soft)',
+                  color: 'var(--red-ink)',
+                  fontWeight: 800,
+                }}
+              >
+                <span style={{ fontSize: 22 }}>❤️</span> +1 heart
+              </div>
+            ) : null}
 
             {gems ? (
               <div

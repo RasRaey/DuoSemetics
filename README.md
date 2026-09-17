@@ -84,6 +84,7 @@ npm run icons        # regenerate icons + splash screens from scripts/icons.mjs
 npm run phone        # build, then serve on the LAN for a phone to open
 npm run check:content # generate every lesson and assert each one is solvable
 npm run test:e2e     # build, then play two full lessons in Chromium at phone size
+npm run test:stress  # mistakes, hearts running out, fidel, chests, reviews, practice
 ```
 
 `.github/workflows/ci.yml` runs lint, typecheck, the content check and the browser
@@ -130,8 +131,10 @@ denominator grows, so the progress bar only moves on exercises you have actually
 got right. A lesson ends when you have learned the material, not after a fixed count.
 
 **Hearts.** Five, one per mistake, one back every 30 minutes, refillable with gems.
-Practice sessions never cost hearts — they are the way back from zero. There is an
-*Unlimited hearts* switch in settings for anyone who finds them stressful.
+Practice is the free way out: it never costs a heart, it opens even at zero, and
+finishing a session hands one back — so running dry is a detour, not a wall. The
+out-of-hearts sheet offers it directly. There is also an *Unlimited hearts* switch
+in settings for anyone who finds them stressful.
 
 **Streaks and XP.** A streak advances once per day; a missed day burns a streak
 freeze if you have one, otherwise it resets. XP comes with a flawless bonus and a

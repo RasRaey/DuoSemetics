@@ -49,6 +49,7 @@ interface Summary {
   seconds: number;
   gems?: number;
   streakExtended: boolean;
+  heartEarned?: boolean;
 }
 
 type IconFn = (p: { size?: number; color?: string; filled?: boolean }) => React.ReactElement;
@@ -147,29 +148,47 @@ export default function App() {
       // updates already applied stay — the learner did answer those.
       if (!o.completed) return;
 
+      const isPractice = lesson.nodeId === null;
       const replay = lesson.nodeId ? (p.nodes[lesson.nodeId]?.completed ?? 0) > 0 : true;
-      const base = lesson.nodeId === null ? 5 : replay ? 5 : 10;
+      const base = isPractice ? 5 : replay ? 5 : 10;
       const xp = scoreSession(o.correct, o.total, o.seconds, base);
       const streakExtended = p.lastDay !== todayKey();
 
-      set((prev) =>
-        completeSession(prev, {
+      // Finishing practice hands back one heart. That is what makes practice a
+      // real way out of zero rather than just somewhere to pass the time.
+      //
+      // Read from this render's progress rather than from inside the updater:
+      // React runs updaters after this function returns, so a flag set in there
+      // would still be false by the time the summary is built.
+      const heartEarned =
+        isPractice && !p.settings.unlimitedHearts && p.hearts < MAX_HEARTS;
+
+      set((prev) => {
+        const next = completeSession(prev, {
           nodeId: lesson.nodeId,
           xp,
           correct: o.correct,
           total: o.total,
           seconds: o.seconds,
-        }),
-      );
+        });
+        if (!heartEarned) return next;
+        return {
+          ...next,
+          hearts: Math.min(MAX_HEARTS, next.hearts + 1),
+          // Restart the regen clock so the free heart doesn't also bank time.
+          heartsAt: Date.now(),
+        };
+      });
       setSummary({
         xp,
         correct: o.correct,
         total: o.total,
         seconds: o.seconds,
         streakExtended,
+        heartEarned,
       });
     },
-    [active, p.nodes, p.lastDay, set],
+    [active, p.nodes, p.lastDay, p.hearts, p.settings.unlimitedHearts, set],
   );
 
   const collectChest = useCallback(() => {
@@ -210,6 +229,7 @@ export default function App() {
         total={summary.total}
         seconds={summary.seconds}
         gems={summary.gems}
+        heartEarned={summary.heartEarned}
         streak={p.streak}
         streakExtended={summary.streakExtended}
         xpToday={p.xpByDay[todayKey()] ?? 0}
@@ -227,12 +247,22 @@ export default function App() {
         title={active.title}
         hearts={p.hearts}
         unlimitedHearts={p.settings.unlimitedHearts}
+        // Free practice has no node, and never spends hearts.
+        costHearts={active.nodeId !== null}
         showTr={p.settings.translit}
         onAnswer={(ids, ok) => set((prev) => recordAnswer(prev, ids, ok))}
         onHeartLost={() => set(spendHeart)}
         onFinish={finish}
         onRefill={() => set((prev) => refillHearts(prev, true))}
         canRefill={p.gems >= REFILL_COST}
+        onPracticeInstead={
+          active.nodeId === null
+            ? undefined
+            : () => {
+                setActive(null);
+                setTab('practice');
+              }
+        }
       />
     );
   }

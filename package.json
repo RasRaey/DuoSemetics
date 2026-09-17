@@ -13,7 +13,8 @@
     "icons": "node scripts/icons.mjs",
     "check:content": "node scripts/check-content.mjs",
     "test:e2e": "npm run build && node scripts/smoke.mjs",
-    "phone": "npm run build && vite preview --host --port 4173"
+    "phone": "npm run build && vite preview --host --port 4173",
+    "test:stress": "npm run build && node scripts/stress.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

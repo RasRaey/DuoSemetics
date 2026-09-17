@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Exercise } from '../engine/types';
 import type { AnswerRecord } from '../engine/types';
-import { checkAnswer, promptFor, solutionAnswer, type CheckResult } from '../engine/check';
+import {
+  checkAnswer,
+  promptFor,
+  solutionAnswer,
+  wrongAnswer,
+  type CheckResult,
+} from '../engine/check';
 import { Bar, Btn, Sheet } from './ui';
 import { Mascot } from './Mascot';
 import {
@@ -39,6 +45,11 @@ interface Props {
   title: string;
   hearts: number;
   unlimitedHearts: boolean;
+  /**
+   * Whether mistakes spend hearts. False for practice sessions, which are the
+   * way back when hearts have run out and so must never consume them.
+   */
+  costHearts?: boolean;
   showTr: boolean;
   /** Called on every graded answer so the store can update the SRS. */
   onAnswer: (wordIds: string[], correct: boolean) => void;
@@ -48,6 +59,8 @@ interface Props {
   /** Offer a gem refill when hearts hit zero. */
   onRefill?: () => void;
   canRefill: boolean;
+  /** Leave the lesson and go practise, which costs nothing and earns a heart. */
+  onPracticeInstead?: () => void;
 }
 
 /** How many exercises later a missed one comes back. */
@@ -67,12 +80,14 @@ export function Lesson({
   title,
   hearts,
   unlimitedHearts,
+  costHearts = true,
   showTr,
   onAnswer,
   onHeartLost,
   onFinish,
   onRefill,
   canRefill,
+  onPracticeInstead,
 }: Props) {
   const [queue, setQueue] = useState<Exercise[]>(exercises);
   const [solved, setSolved] = useState(0);
@@ -98,7 +113,10 @@ export function Lesson({
   const answer = answerState.key === ex?.key ? answerState.value : [];
   const result = resultState?.key === ex?.key ? resultState.value : null;
   const locked = result !== null;
-  const dead = !unlimitedHearts && hearts <= 0;
+  // Hearts are out of play entirely in practice, and when the learner has
+  // switched them off.
+  const heartsOff = unlimitedHearts || !costHearts;
+  const dead = !heartsOff && hearts <= 0;
 
   const setAnswer = useCallback(
     (value: string[]) => {
@@ -121,6 +139,7 @@ export function Lesson({
     (window as Window & { __e2e?: unknown }).__e2e = {
       type: ex.type,
       solve: () => setAnswer(solutionAnswer(ex)),
+      fail: () => setAnswer(wrongAnswer(ex)),
       pairs: ex.type === 'match_pairs' ? ex.pairs : undefined,
     };
   }, [ex, setAnswer]);
@@ -163,7 +182,7 @@ export function Lesson({
       haptic([12, 60, 12]);
       setShake(true);
       window.setTimeout(() => setShake(false), 420);
-      if (!unlimitedHearts) {
+      if (!heartsOff) {
         sfxHeartLost();
         onHeartLost();
       }
@@ -235,10 +254,16 @@ export function Lesson({
             ✕
           </button>
           <Bar value={total ? solved / total : 0} />
-          <div className="stat hearts" aria-label={`${hearts} hearts`}>
-            <span className="ico">{dead ? '💔' : '❤️'}</span>
-            {unlimitedHearts ? '∞' : hearts}
-          </div>
+          {costHearts ? (
+            <div className="stat hearts" aria-label={unlimitedHearts ? 'Unlimited hearts' : `${hearts} hearts`}>
+              <span className="ico">{dead ? '💔' : '❤️'}</span>
+              {unlimitedHearts ? '∞' : hearts}
+            </div>
+          ) : (
+            <div className="stat" style={{ color: 'var(--blue)' }} aria-label="Practice session, no hearts at stake">
+              <span className="ico">🎯</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -293,6 +318,11 @@ export function Lesson({
           {onRefill && (
             <Btn tone="gold" onClick={onRefill} disabled={!canRefill}>
               💎 Refill hearts {canRefill ? '' : '— not enough gems'}
+            </Btn>
+          )}
+          {onPracticeInstead && (
+            <Btn tone="ghost" onClick={onPracticeInstead}>
+              🎯 Practise — free, and earns a heart
             </Btn>
           )}
           <Btn tone="quiet" onClick={() => finish(false, records)}>End session</Btn>

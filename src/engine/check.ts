@@ -154,3 +154,41 @@ export function solutionAnswer(ex: Exercise): string[] {
       return ex.pairs.map((p) => p.id);
   }
 }
+
+/**
+ * An answer that is definitely wrong.
+ *
+ * Counterpart to `solutionAnswer`, used by the smoke test to exercise the
+ * mistake path — heart loss, the re-queue, the feedback banner — which is
+ * otherwise never covered by a run that answers everything correctly.
+ */
+export function wrongAnswer(ex: Exercise): string[] {
+  switch (ex.type) {
+    case 'pick_image':
+    case 'select_word':
+    case 'listen_pick': {
+      const other = ex.options.find((o) => o.id !== ex.answer);
+      return other ? [other.id] : [];
+    }
+    case 'fill_blank':
+    case 'fidel_pick_sound':
+    case 'fidel_pick_char':
+    case 'fidel_order': {
+      const other = ex.options.find((o) => o !== ex.answer);
+      return other ? [other] : [];
+    }
+    case 'translate_type':
+      return ['definitely not the answer'];
+    case 'translate_bank': {
+      // Changing the token count is the one edit guaranteed to be wrong, even
+      // when a sentence repeats a token.
+      const solution = solutionAnswer(ex);
+      const used = new Set(solution);
+      const spare = ex.bank.findIndex((_, i) => !used.has(String(i)));
+      if (spare >= 0) return [...solution, String(spare)];
+      return solution.slice(0, -1);
+    }
+    case 'match_pairs':
+      return [];
+  }
+}

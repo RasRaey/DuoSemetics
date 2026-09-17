@@ -78,8 +78,23 @@ a LAN address there is no offline — only on HTTPS, or localhost.
 size, checks every tab renders, checks progress survives a reload, and fails on
 any same-origin runtime error. Run it after any change to the lesson flow.
 
-The smoke test drives the app through an opt-in hook: `?e2e=1` publishes the
-current exercise's solution on `window.__e2e`. Keep that hook query-gated.
+`scripts/stress.mjs` covers what a clean playthrough never reaches: wrong
+answers, hearts running out, Fidel drills, chests, unit reviews and practice.
+Run it after touching hearts, the queue or the reward flow.
+
+Both tests drive the app through an opt-in hook: `?e2e=1` publishes the current
+exercise's `solve()` and `fail()` on `window.__e2e`. Keep that hook query-gated.
+
+**Seed localStorage with `context.addInitScript`, never `page.evaluate` on a
+loaded page.** The store saves on its own schedule and will silently overwrite a
+write that lands after boot — this has produced two false test failures already.
+
+## The hearts loop
+
+Practice must stay free and must keep handing a heart back on completion
+(`costHearts={false}` on the lesson, the `earnsHeart` branch in `App.finish`).
+That is the only way out of zero hearts without paying gems or waiting, and the
+out-of-hearts sheet points at it. Breaking either half strands the learner.
 
 ## Known gaps
 

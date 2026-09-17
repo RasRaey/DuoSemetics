@@ -23,3 +23,5 @@ jobs:
       # Plays two full lessons in Chromium at iPhone 15 Pro Max size.
       - run: npx playwright install --with-deps chromium
       - run: node scripts/smoke.mjs
+      # Mistakes, hearts running out, fidel drills, chests, reviews, practice.
+      - run: node scripts/stress.mjs
