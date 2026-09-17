@@ -41,16 +41,6 @@ export function checkAnswer(ex: Exercise, answer: string[]): CheckResult {
       };
     }
 
-    case 'listen_pick': {
-      const correct = gradeChoice(answer[0] ?? '', ex.answer);
-      return {
-        correct,
-        verdict: correct ? 'correct' : 'wrong',
-        solution: ex.audioText,
-        solutionTr: ex.audioTr,
-      };
-    }
-
     case 'fill_blank': {
       const correct = gradeChoice(answer[0] ?? '', ex.answer);
       return {
@@ -102,8 +92,6 @@ export function promptFor(ex: Exercise): string {
       return 'Which one of these?';
     case 'select_word':
       return ex.direction === 'ti_en' ? 'What does this mean?' : 'How do you say this?';
-    case 'listen_pick':
-      return 'What did you hear?';
     case 'fill_blank':
       return 'Fill in the blank';
     case 'translate_bank':
@@ -132,7 +120,6 @@ export function solutionAnswer(ex: Exercise): string[] {
   switch (ex.type) {
     case 'pick_image':
     case 'select_word':
-    case 'listen_pick':
     case 'fill_blank':
     case 'fidel_pick_sound':
     case 'fidel_pick_char':
@@ -165,8 +152,7 @@ export function solutionAnswer(ex: Exercise): string[] {
 export function wrongAnswer(ex: Exercise): string[] {
   switch (ex.type) {
     case 'pick_image':
-    case 'select_word':
-    case 'listen_pick': {
+    case 'select_word': {
       const other = ex.options.find((o) => o.id !== ex.answer);
       return other ? [other.id] : [];
     }

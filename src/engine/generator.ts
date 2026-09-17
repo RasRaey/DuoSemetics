@@ -101,20 +101,6 @@ function selectWord(
   };
 }
 
-function listenPick(target: Word, pool: Word[], rng: Rng, key: string): Exercise | null {
-  const others = distractors(target, pool, 2, rng);
-  if (others.length < 2) return null;
-  return {
-    type: 'listen_pick',
-    key,
-    wordIds: [target.id],
-    audioText: target.ti,
-    audioTr: target.tr,
-    options: rng.shuffle([target, ...others]),
-    answer: target.id,
-  };
-}
-
 function translateBank(
   s: Sentence,
   direction: 'ti_en' | 'en_ti',
@@ -289,12 +275,13 @@ function buildWordLesson(node: LessonNode, rng: Rng, length: number): Exercise[]
     push(pickImage(w, pool, rng, `t-img-${w.id}`) ?? selectWord(w, pool, 'ti_en', rng, `t-sel-${w.id}-${i}`));
   });
 
-  // 2. Recognition the other way round, plus listening.
+  // 2. Recognition the other way round, then a second pass over a few words
+  //    reading them back into English.
   rng.shuffle(focus).slice(0, 3).forEach((w, i) => {
     push(selectWord(w, pool, 'en_ti', rng, `r-sel-${w.id}-${i}`));
   });
   rng.shuffle(focus).slice(0, 2).forEach((w, i) => {
-    push(listenPick(w, pool, rng, `r-lis-${w.id}-${i}`));
+    push(selectWord(w, pool, 'ti_en', rng, `r-read-${w.id}-${i}`));
   });
 
   // 3. Sentences: read one way, produce the other, and one gap-fill.
@@ -314,10 +301,13 @@ function buildWordLesson(node: LessonNode, rng: Rng, length: number): Exercise[]
   const body = core.slice(0, room);
   while (body.length < room && focus.length) {
     const w = rng.pick(focus);
-    const e =
-      rng.next() < 0.5
-        ? selectWord(w, pool, rng.next() < 0.5 ? 'ti_en' : 'en_ti', rng, `x-${body.length}-${w.id}`)
-        : listenPick(w, pool, rng, `x-${body.length}-${w.id}`);
+    const e = selectWord(
+      w,
+      pool,
+      rng.next() < 0.5 ? 'ti_en' : 'en_ti',
+      rng,
+      `x-${body.length}-${w.id}`,
+    );
     if (e) body.push(e);
     else break;
   }
@@ -367,10 +357,9 @@ export function generatePractice(wordIds: string[], seed: string, length = 12): 
   rng.shuffle(focus).forEach((w, i) => {
     if (out.length >= length - 3) return;
     const roll = rng.next();
-    if (roll < 0.3) push(pickImage(w, pool, rng, `p-img-${w.id}-${i}`));
-    else if (roll < 0.6) push(selectWord(w, pool, 'ti_en', rng, `p-a-${w.id}-${i}`));
-    else if (roll < 0.85) push(selectWord(w, pool, 'en_ti', rng, `p-b-${w.id}-${i}`));
-    else push(listenPick(w, pool, rng, `p-l-${w.id}-${i}`));
+    if (roll < 0.35) push(pickImage(w, pool, rng, `p-img-${w.id}-${i}`));
+    else if (roll < 0.7) push(selectWord(w, pool, 'ti_en', rng, `p-a-${w.id}-${i}`));
+    else push(selectWord(w, pool, 'en_ti', rng, `p-b-${w.id}-${i}`));
   });
   rng.sample(relevant, 2).forEach((s) => {
     push(translateBank(s, 'ti_en', Object.values(SENTENCE_BY_ID), rng, `p-s-${s.id}`));

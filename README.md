@@ -113,11 +113,10 @@ progressive with ኣሎ (`እንጀራ ይበልዕ ኣሎ።`).
 
 ## Exercise types
 
-Ten, generated fresh each time a lesson is played:
+Nine, generated fresh each time a lesson is played:
 
 - **Pick the picture** — a new word against four images
 - **Multiple choice**, Tigrinya → English and English → Tigrinya
-- **Listen and choose**
 - **Word bank translation**, both directions
 - **Type the translation**, graded leniently (typos and filler words forgiven)
 - **Fill in the blank**
@@ -155,17 +154,27 @@ implying there are other users.
 
 ## Audio
 
-No platform ships a Tigrinya (`ti`) speech voice. The app tries, in order: a `ti-*`
-voice, then an Amharic (`am-*`) voice — a different language, but it shares the
-Ge'ez script and most consonants, so it reads Tigrinya text far more usefully than
-an English voice would — and then nothing at all.
+**There is none, and there are no listening exercises.**
 
-When there is no voice, listening exercises become reading exercises against the
-transliteration rather than silently pretending to play something. The Profile tab
-states which of the three cases applies on the current device.
+No platform ships a Tigrinya (`ti`) speech voice. The app will use one if a
+device ever has it, and falls back to an Amharic voice where present — same
+script, most of the same consonants, wrong rhythm — but on a typical iPhone
+there is nothing to play, so the play buttons simply do not appear.
 
-**This is the honest gap in the course.** Recorded audio from native speakers is what
-it needs, and is the single biggest thing that would improve it.
+The "what did you hear?" exercise has been removed. Without audio it printed the
+transliteration of the answer above three options that each showed their own
+transliteration, which made it a string-matching puzzle rather than listening
+practice. It was inflating scores while teaching nothing.
+
+Other sources were checked and none is usable from this project's build
+environment: espeak-ng ships 126 voices and Tigrinya is not one of them, and
+HuggingFace — which hosts Meta's MMS-TTS `tir` model — is unreachable from the
+sandbox the app is built in.
+
+**This is the biggest single gap in the course.** Recorded audio from a native
+speaker would fix it properly and bring listening exercises back; roughly 170
+words and 55 sentences, about an hour of someone's time, and a couple of MB of
+Opus.
 
 ## Layout notes for iPhone
 

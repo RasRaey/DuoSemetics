@@ -13,7 +13,6 @@ import { Mascot } from './Mascot';
 import {
   PickImageEx,
   SelectWordEx,
-  ListenPickEx,
   FillBlankEx,
   FidelPickSoundEx,
   FidelPickCharEx,
@@ -388,8 +387,6 @@ function Body({
       return <PickImageEx ex={ex} {...common} correctId={ex.answer} />;
     case 'select_word':
       return <SelectWordEx ex={ex} {...common} correctId={ex.answer} />;
-    case 'listen_pick':
-      return <ListenPickEx ex={ex} {...common} correctId={ex.answer} speak={speak} audioAvailable={audioAvailable} />;
     case 'fill_blank':
       return <FillBlankEx ex={ex} {...common} correctId={ex.answer} />;
     case 'fidel_pick_sound':

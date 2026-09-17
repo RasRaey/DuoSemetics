@@ -275,11 +275,11 @@ export function Profile({ p, onRefill, onBuyFreeze, onSettings, onRename, onRese
       >
         <div className="h3" style={{ fontSize: 14 }}>About the audio</div>
         <div className="tiny muted" style={{ lineHeight: 1.55 }}>
-          {!ttsSupported()
-            ? 'This device has no Tigrinya or Amharic speech voice, so listening exercises fall back to reading the transliteration. Nothing is played rather than playing the wrong language.'
-            : isApproximate()
-              ? 'No Tigrinya speech voice exists on this device, so audio uses the Amharic voice. It shares the Ge’ez script and most consonants, but some sounds and the rhythm will be off — treat it as a guide, not a model accent.'
-              : 'Using this device’s Tigrinya speech voice.'}
+          {ttsSupported()
+            ? isApproximate()
+              ? 'No Tigrinya speech voice exists on any platform, so the play buttons use this device’s Amharic voice. It shares the Ge’ez script and most consonants, but some sounds and the rhythm will be off — treat it as a rough guide, not a model accent.'
+              : 'Using this device’s Tigrinya speech voice.'
+            : 'No platform ships a Tigrinya speech voice, and this device has no Amharic one either, so there is no audio here at all. Listening exercises have been removed rather than faked — they would have shown you the answer in writing, which teaches nothing. They come back when recorded audio from a native speaker does.'}
         </div>
       </div>
 

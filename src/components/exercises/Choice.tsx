@@ -1,15 +1,13 @@
-import { useEffect } from 'react';
 import type {
   FidelOrder,
   FidelPickChar,
   FidelPickSound,
   FillBlank,
-  ListenPick,
   PickImage,
   SelectWord,
 } from '../../engine/types';
 import { ORDERS } from '../../data/fidel';
-import { Geez, SpeakerBtn } from '../ui';
+import { Geez } from '../ui';
 import { sfxTap } from '../../audio/sfx';
 import { haptic } from '../../audio/speech';
 
@@ -99,57 +97,6 @@ export function SelectWordEx({ ex, value, onChange, locked, correctId, showTr }:
             ) : (
               <span style={{ fontSize: 17, fontWeight: 800 }}>{o.en}</span>
             )}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** Hear it, pick it. Auto-plays once when the exercise appears. */
-export function ListenPickEx({
-  ex,
-  value,
-  onChange,
-  locked,
-  correctId,
-  showTr,
-  speak,
-  audioAvailable,
-}: ChoiceProps & { ex: ListenPick; speak: (t: string) => void; audioAvailable: boolean }) {
-  const tap = useTap(onChange, locked);
-
-  useEffect(() => {
-    if (audioAvailable) speak(ex.audioText);
-    // Only on first mount of this exercise.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ex.key]);
-
-  return (
-    <div className="col" style={{ gap: 20 }}>
-      <div className="center col" style={{ gap: 10 }}>
-        <SpeakerBtn onPlay={() => speak(ex.audioText)} available={audioAvailable} size="lg" />
-        {!audioAvailable && (
-          // Without a voice there is nothing to hear, so the exercise becomes a
-          // reading task instead of an impossible one.
-          <div className="col center" style={{ gap: 2 }}>
-            <div className="tr" style={{ fontSize: 15 }}>{ex.audioTr}</div>
-            <div className="tiny muted">No Tigrinya voice on this device — read it instead</div>
-          </div>
-        )}
-      </div>
-      <div className="col" style={{ gap: 10 }}>
-        {ex.options.map((o) => (
-          <button
-            key={o.id}
-            onClick={() => tap(o.id)}
-            className={tileClass(o.id, value, locked, correctId)}
-            style={{ padding: '14px 16px', textAlign: 'left' }}
-          >
-            <div className="row" style={{ gap: 10 }}>
-              <span className="geez" style={{ fontSize: 24 }}>{o.ti}</span>
-              {showTr && <span className="tr">{o.tr}</span>}
-            </div>
           </button>
         ))}
       </div>

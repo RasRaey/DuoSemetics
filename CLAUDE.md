@@ -150,11 +150,29 @@ Practice must stay free and must keep handing a heart back on completion
 That is the only way out of zero hearts without paying gems or waiting, and the
 out-of-hearts sheet points at it. Breaking either half strands the learner.
 
-## Known gaps
+## Audio, and why there are no listening exercises
 
-- **No recorded audio.** No platform ships a Tigrinya speech voice, so the app
-  falls back to an Amharic voice and then to reading the transliteration. Native
-  speaker recordings are the single biggest improvement available.
+There is no Tigrinya audio, and the app no longer pretends otherwise.
+
+The `listen_pick` exercise was removed. With no voice it fell back to printing
+the transliteration of the answer above the options — each of which also showed
+its own transliteration — so it was a string-matching puzzle, not listening. It
+taught nothing and it flattered the learner's score.
+
+Sources checked, none usable: no platform ships a `ti` speech voice; espeak-ng
+1.51 has 126 voices and Tigrinya is not among them (Amharic is); HuggingFace,
+which hosts Meta's MMS-TTS `tir` model, is blocked by this sandbox's egress
+policy. If you can reach it from elsewhere, MMS-TTS is the best synthetic
+option; native-speaker recordings are better still.
+
+`SpeakerBtn` renders **nothing** when no voice exists, rather than a dead icon
+that invites a tap and does nothing. Keep it that way.
+
+Bringing listening back means real clips: a manifest, per-lesson lazy loading,
+recorded audio first with TTS as fallback — and the exercise must not display
+the transliteration of what is being played.
+
+## Known gaps
 - The league's rivals are locally generated, and the UI says so. Do not present
   them as real users.
 - Content has been written carefully but has not been reviewed by a native

@@ -12,7 +12,6 @@ export type Exercise =
   | TranslateBank
   | TranslateType
   | MatchPairs
-  | ListenPick
   | FillBlank
   | FidelPickSound
   | FidelPickChar
@@ -73,16 +72,6 @@ export interface TranslateType extends Base {
 export interface MatchPairs extends Base {
   type: 'match_pairs';
   pairs: { id: string; ti: string; en: string; tr: string }[];
-}
-
-/** Hear it, then pick the written form. */
-export interface ListenPick extends Base {
-  type: 'listen_pick';
-  /** What gets spoken / shown on the replay button. */
-  audioText: string;
-  audioTr: string;
-  options: Word[];
-  answer: string;
 }
 
 /** A sentence with one token blanked out and three candidates. */

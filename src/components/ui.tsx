@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { sfxTap } from '../audio/sfx';
 import { haptic } from '../audio/speech';
-import { IconFlame, IconGem, IconHeart, IconMute, IconSpeaker } from './icons';
+import { IconFlame, IconGem, IconHeart, IconSpeaker } from './icons';
 
 /** Primary action button with the house "pressable slab" styling. */
 export function Btn({
@@ -189,7 +189,13 @@ export function Geez({
   );
 }
 
-/** A speaker button that reports when no voice exists rather than doing nothing. */
+/**
+ * Play button for a word or sentence.
+ *
+ * Renders nothing at all when the device has no usable voice. A dead speaker
+ * icon is worse than no icon: it invites a tap that does nothing, and it takes
+ * up space promising a feature the app cannot deliver.
+ */
 export function SpeakerBtn({
   onPlay,
   available,
@@ -201,9 +207,10 @@ export function SpeakerBtn({
 }) {
   const px = size === 'lg' ? 92 : size === 'md' ? 64 : 44;
   const [ping, setPing] = useState(false);
+  if (!available) return null;
   return (
     <button
-      aria-label={available ? 'Play audio' : 'Audio unavailable on this device'}
+      aria-label="Play audio"
       onClick={() => {
         setPing(true);
         window.setTimeout(() => setPing(false), 320);
@@ -214,18 +221,14 @@ export function SpeakerBtn({
         width: px,
         height: px,
         borderRadius: 16,
-        background: available ? 'var(--blue)' : 'var(--line)',
-        boxShadow: `0 4px 0 ${available ? 'var(--blue-ink)' : 'var(--line)'}`,
-        color: available ? '#fff' : 'var(--locked-ink)',
+        background: 'var(--blue)',
+        boxShadow: '0 4px 0 var(--blue-ink)',
+        color: '#fff',
         display: 'grid',
         placeItems: 'center',
       }}
     >
-      {available ? (
-        <IconSpeaker size={px * 0.46} color="#fff" />
-      ) : (
-        <IconMute size={px * 0.46} color="var(--locked-ink)" />
-      )}
+      <IconSpeaker size={px * 0.46} color="#fff" />
     </button>
   );
 }
