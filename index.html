@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover is what lets the layout reach under the Dynamic
+         Island and the home indicator; the CSS then insets with env(). -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <title>DuoSemetics — Learn Tigrinya</title>
+    <meta name="description" content="Learn Tigrinya (ትግርኛ) and the Ge'ez script through short daily lessons." />
+
+    <!-- Add to Home Screen, iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="DuoSemetics" />
+    <!-- black-translucent puts the status bar over the app, which is what the
+         safe-area padding in index.css is sized for. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+    <!-- Launch image for iPhone 15 Pro Max (1290x2796 @3x), light and dark. -->
+    <link
+      rel="apple-touch-startup-image"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)"
+      href="./icons/splash-1290x2796.png"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)"
+      href="./icons/splash-1290x2796-dark.png"
+    />
+
+    <meta name="theme-color" content="#46be4c" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#131b19" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <style>
+      /* Paint the background before the CSS bundle lands so there is no white
+         flash on a dark-mode launch. */
+      html { background: #fff; }
+      @media (prefers-color-scheme: dark) { html { background: #131b19; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "duosemetics",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:pages": "BASE_PATH=/DuoSemetics/ npm run build",
+    "preview": "vite preview",
+    "lint": "oxlint",
+    "typecheck": "tsc -b --noEmit",
+    "icons": "node scripts/icons.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "test:e2e": "npm run build && node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  },
+  "description": "Learn Tigrinya (ትግርኛ) and the Ge'ez script — a mobile-first practice app."
+}

@@ -1,0 +1,21 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Smoke-test output; a curated few are committed under docs/screenshots.
+shots
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build info
+*.tsbuildinfo

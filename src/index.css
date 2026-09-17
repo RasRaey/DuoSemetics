@@ -1,0 +1,531 @@
+/* ==========================================================================
+   DuoSemetics — design system
+   Built for iPhone 15 Pro Max first: 430 x 932pt, Dynamic Island at the top,
+   home indicator at the bottom. Everything keys off safe-area insets so it
+   also behaves on smaller iPhones and in a desktop browser.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Brand palette. Green carries "correct" and primary action; gold is the
+     streak/XP currency; red is only ever used for a mistake or a lost heart. */
+  --green: #46be4c;
+  --green-ink: #379040;
+  --green-soft: #d7f5da;
+  --green-glow: #58e05f;
+
+  --gold: #ffc23c;
+  --gold-ink: #d99500;
+  --gold-soft: #fff2d4;
+
+  --red: #e8503a;
+  --red-ink: #bd3828;
+  --red-soft: #fde3df;
+
+  --blue: #2b9be0;
+  --blue-ink: #1b7ab4;
+  --blue-soft: #dcf0fb;
+
+  --purple: #8b63e8;
+  --purple-ink: #6b46c4;
+  --purple-soft: #ece4fd;
+
+  --teal: #16b8a6;
+  --teal-ink: #0f8f81;
+  --teal-soft: #d5f5f1;
+
+  /* Neutrals */
+  --ink: #23342f;
+  --ink-2: #4c5f59;
+  --muted: #8a9a95;
+  --line: #e3eae7;
+  --line-2: #f0f4f3;
+  --surface: #ffffff;
+  --surface-2: #f7faf9;
+  --locked: #d6dedb;
+  --locked-ink: #aab6b2;
+
+  /* Depth: the chunky bottom edge that makes buttons feel pressable. */
+  --lip: 4px;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+
+  --gutter: 16px;
+
+  /* Safe areas, with a floor so the desktop preview isn't flush to the edge. */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Height of the bottom tab bar, excluding the home indicator. */
+  --tabbar-h: 62px;
+
+  --font: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', 'Nunito', system-ui, sans-serif;
+  /* Kefa ships with iOS; Noto Sans Ethiopic covers everywhere else. */
+  --font-geez: 'Noto Sans Ethiopic', 'Kefa', 'Abyssinica SIL', 'Nyala',
+    ui-rounded, system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'],
+:root:not([data-theme='light']) {
+  /* Dark values are applied in the media query below so the light theme stays
+     the default when no preference is expressed. */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: #eef5f2;
+    --ink-2: #b9c7c2;
+    --muted: #7f908b;
+    --line: #2b3a36;
+    --line-2: #22302c;
+    --surface: #131b19;
+    --surface-2: #1a2422;
+    --locked: #2b3a36;
+    --locked-ink: #5d6d68;
+    --green-soft: #17331b;
+    --gold-soft: #33280c;
+    --red-soft: #351712;
+    --blue-soft: #102a3a;
+    --purple-soft: #221a3c;
+    --teal-soft: #0d2e2a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ink: #eef5f2;
+  --ink-2: #b9c7c2;
+  --muted: #7f908b;
+  --line: #2b3a36;
+  --line-2: #22302c;
+  --surface: #131b19;
+  --surface-2: #1a2422;
+  --locked: #2b3a36;
+  --locked-ink: #5d6d68;
+  --green-soft: #17331b;
+  --gold-soft: #33280c;
+  --red-soft: #351712;
+  --blue-soft: #102a3a;
+  --purple-soft: #221a3c;
+  --teal-soft: #0d2e2a;
+  color-scheme: dark;
+}
+
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  /* Stop iOS from scaling text when the phone is rotated. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  /* The app is a UI, not a document: no accidental text selection or callouts. */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+  user-select: text;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+/* Ge'ez text gets its own face and a touch more line height — the script has
+   tall ascenders and descenders that crowd at default leading. */
+.geez {
+  font-family: var(--font-geez);
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.tr {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+/* ─── App shell ─────────────────────────────────────────────────────────── */
+
+.app {
+  position: relative;
+  height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* A scrolling page under the fixed top bar and above the tab bar. */
+.page {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-left: max(var(--gutter), var(--sal));
+  padding-right: max(var(--gutter), var(--sar));
+}
+
+.page-pad-bottom {
+  padding-bottom: calc(var(--tabbar-h) + var(--sab) + 28px);
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────────── */
+
+/* The house style: flat fill, hard bottom lip, press translates down onto it. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 50px;
+  padding: 13px 18px;
+  border-radius: var(--r-md);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--green);
+  box-shadow: 0 var(--lip) 0 var(--green-ink);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.15s ease;
+  touch-action: manipulation;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(var(--lip));
+  box-shadow: 0 0 0 var(--green-ink);
+}
+
+.btn:disabled {
+  background: var(--line);
+  color: var(--locked-ink);
+  box-shadow: none;
+  cursor: default;
+}
+
+.btn.red { background: var(--red); box-shadow: 0 var(--lip) 0 var(--red-ink); }
+.btn.red:active:not(:disabled) { box-shadow: 0 0 0 var(--red-ink); }
+.btn.blue { background: var(--blue); box-shadow: 0 var(--lip) 0 var(--blue-ink); }
+.btn.blue:active:not(:disabled) { box-shadow: 0 0 0 var(--blue-ink); }
+.btn.gold { background: var(--gold); color: var(--ink); box-shadow: 0 var(--lip) 0 var(--gold-ink); }
+.btn.gold:active:not(:disabled) { box-shadow: 0 0 0 var(--gold-ink); }
+.btn.purple { background: var(--purple); box-shadow: 0 var(--lip) 0 var(--purple-ink); }
+.btn.purple:active:not(:disabled) { box-shadow: 0 0 0 var(--purple-ink); }
+
+/* Outline variant for secondary actions. */
+.btn.ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 2px solid var(--line);
+  box-shadow: 0 var(--lip) 0 var(--line);
+}
+.btn.ghost:active:not(:disabled) { box-shadow: 0 0 0 var(--line); }
+
+.btn.quiet {
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.btn.quiet:active:not(:disabled) { transform: none; opacity: 0.6; }
+
+/* ─── Selectable cards (options, tiles, word bank) ──────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: var(--r-md);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.06s ease;
+  touch-action: manipulation;
+}
+
+.card:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.card.sel {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+}
+
+.card.ok {
+  background: var(--green-soft);
+  border-color: var(--green);
+}
+
+.card.bad {
+  background: var(--red-soft);
+  border-color: var(--red);
+}
+
+.card.gone {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.card.dim {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ─── Progress bar ──────────────────────────────────────────────────────── */
+
+.bar {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  flex: 1;
+}
+
+.bar > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  border-radius: 999px;
+  background: var(--green);
+  transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* The highlight strip that makes the fill look glossy. */
+.bar > i::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 3px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.bar.gold > i { background: var(--gold); }
+.bar.blue > i { background: var(--blue); }
+
+/* ─── Top bar ───────────────────────────────────────────────────────────── */
+
+.topbar {
+  flex: none;
+  padding-top: var(--sat);
+  padding-left: max(var(--gutter), var(--sal));
+  padding-right: max(var(--gutter), var(--sar));
+  background: var(--surface);
+  border-bottom: 2px solid var(--line-2);
+}
+
+.topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 54px;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.stat .ico { font-size: 20px; line-height: 1; }
+.stat.streak { color: var(--gold-ink); }
+.stat.gems { color: var(--blue); }
+.stat.hearts { color: var(--red); }
+.stat.dead { color: var(--muted); }
+
+/* ─── Tab bar ───────────────────────────────────────────────────────────── */
+
+.tabbar {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: calc(var(--tabbar-h) + var(--sab));
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  background: var(--surface);
+  border-top: 2px solid var(--line-2);
+}
+
+.tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  border-radius: var(--r-sm);
+  transition: color 0.15s ease;
+}
+
+.tabbar button .ico {
+  font-size: 23px;
+  line-height: 1;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tabbar button.on { color: var(--green); }
+.tabbar button.on .ico { transform: translateY(-2px) scale(1.12); }
+.tabbar button:active .ico { transform: scale(0.9); }
+
+/* ─── Sheets & overlays ─────────────────────────────────────────────────── */
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 18, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 40;
+  animation: fade 0.18s ease;
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 10px max(var(--gutter), var(--sal)) calc(var(--sab) + 18px);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
+  animation: rise 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.sheet-grip {
+  width: 42px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  margin: 4px auto 14px;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────── */
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(100%); } }
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(2px); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes spinaway {
+  to { transform: rotate(18deg) translateY(-90px) scale(0.4); opacity: 0; }
+}
+
+.pop { animation: pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.shake { animation: shake 0.4s ease; }
+.bob { animation: bob 2.6s ease-in-out infinite; }
+
+/* Respect the OS setting and the in-app toggle. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:root[data-motion='reduced'] *,
+:root[data-motion='reduced'] *::before,
+:root[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────────── */
+
+.row { display: flex; align-items: center; gap: 10px; }
+.col { display: flex; flex-direction: column; }
+.grow { flex: 1; }
+.center { display: flex; align-items: center; justify-content: center; }
+.wrap { flex-wrap: wrap; }
+.muted { color: var(--muted); }
+.tiny { font-size: 12px; font-weight: 700; }
+.small { font-size: 14px; }
+.h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.h3 { font-size: 16px; font-weight: 800; }
+.upper { text-transform: uppercase; letter-spacing: 0.06em; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
