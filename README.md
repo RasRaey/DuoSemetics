@@ -14,6 +14,10 @@ Dynamic Island and home-indicator safe areas, standalone display, offline suppor
   <img src="docs/screenshots/dark.png" width="200" alt="Dark mode" />
 </p>
 
+> **Picking this up from someone else?** [`docs/HANDOVER.md`](docs/HANDOVER.md)
+> covers what exists, why it is shaped this way, what is unfinished and what to
+> do next. [`CLAUDE.md`](CLAUDE.md) has the working rules and the traps.
+
 ## Install it on your iPhone
 
 Whichever route you take, the last two steps are the same: open the URL in
